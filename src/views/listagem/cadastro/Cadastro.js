@@ -1,0 +1,153 @@
+import React, { useState, useRef } from 'react';
+import { useReactToPrint } from 'react-to-print';
+import { CButton, CCard, CCardBody, CCardHeader, CCol, CRow } from '@coreui/react';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useNavigate } from 'react-router-dom';
+
+import ClientValidation from './All/ClientValidation';
+import FinanceValidation from './All/FinanceValidation';
+import { editClient, createClient } from '../../../axios_api/clientService';
+
+const Validation = ({ clientsCompare = [], isAdmin, id }) => {
+  const [sharedData, setSharedData] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
+
+  const clientRef = useRef(null);
+  const financeRef = useRef(null);
+  
+  // Helper to find unfilled inputs
+  const findFirstUnfilledInput = (ref) => {
+    if (!ref.current) return null;
+    return ref.current.querySelector('input:invalid, select:invalid, textarea:invalid');
+  };
+
+  // Validate both forms
+  const validateForm = () => {
+    const clientUnfilledInput = findFirstUnfilledInput(clientRef);
+    if (clientUnfilledInput) {
+      clientUnfilledInput.scrollIntoView({ behavior: 'smooth' });
+      clientUnfilledInput.focus();
+      toast.warning('Por favor, complete o formulário de Validação de Cliente.');
+      return false;
+    }
+
+    const financeUnfilledInput = findFirstUnfilledInput(financeRef);
+    if (financeUnfilledInput) {
+      financeUnfilledInput.scrollIntoView({ behavior: 'smooth' });
+      financeUnfilledInput.focus();
+      toast.warning('Por favor, complete o formulário de Validação de Financiamento.');
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleDataChange = ( data) => {
+    setSharedData((prevState) => ({
+      ...prevState,
+      ...data ,
+    }));
+    console.log(sharedData)
+  };
+
+  const handleSubmit = async (event) => {
+    if (event) event.preventDefault();
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
+
+    try {
+     
+
+      if (id) {
+        await editClient(id, sharedData, 'nome');
+        toast.success('Submetido com sucesso.');
+      } else {
+        // Check for duplicate entries
+        if (
+          clientsCompare.some(
+            (client) => client.nuit === sharedData.client.nuit && client.id !== id
+          )
+        ) {
+
+          return;
+        }
+
+        if (
+          clientsCompare.some(
+            (client) =>
+              client.email?.toLowerCase() === sharedData.client.email?.toLowerCase() &&
+              client.id !== id
+          )
+        ) {
+          toast.warning('Este email já está em uso!');
+          return;
+        }
+
+        if (
+          clientsCompare.some(
+            (client) => client.id_Number === sharedData.client.id_Number
+          )
+        ) {
+          toast.warning('Este número de documento já está em uso!');
+          return;
+        }
+
+        await createClient(sharedData);
+        toast.success('Submetido com sucesso.');
+      }
+
+      setTimeout(() => {
+        navigate(-1);
+      }, 4700);
+    } catch (error) {
+      if(error.response&& error.response.data.message){
+        toast.warning(error.response.data.message)
+      }else{
+      console.error('Erro ao submeter os dados:', error);
+      toast.error('Ocorreu um erro ao processar a solicitação. Por favor, tente novamente.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <CRow >
+      <CCol md={12}>
+        <CCard className="mb-4" ref={clientRef}>
+          <CCardHeader className="bg-warning text-black text-center">
+            <strong>Formulário de Validação de Cliente</strong>
+          </CCardHeader>
+          <CCardBody>
+            <ClientValidation
+              onChange={(data) => handleDataChange(data)}
+            />
+          </CCardBody>
+        </CCard>
+      </CCol>
+      <CCol md={12}>
+        <CCard className="mb-4" ref={financeRef}>
+          <CCardHeader className="bg-warning text-black text-center">
+            <strong>Formulário de Validação de Financiamento</strong>
+          </CCardHeader>
+          <CCardBody>
+            <FinanceValidation onChange={(data) => handleDataChange(data)} />
+          </CCardBody>
+        </CCard>
+      </CCol>
+      <CRow>
+        <CCol md={6} className="text-center">
+          <CButton color="primary" onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting ? 'Submetendo...' : 'Submeter'}
+          </CButton>
+        </CCol>
+       
+      </CRow>
+    </CRow>
+  );
+};
+
+export default Validation;

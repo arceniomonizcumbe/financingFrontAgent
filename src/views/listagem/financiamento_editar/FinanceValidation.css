@@ -1,0 +1,20 @@
+.search-results {
+  position: absolute; /* Overlay on top of other elements */
+  z-index: 1000; /* Ensure it appears above other content */
+  width: 100%; /* Match the width of the input */
+  max-height: 200px; /* Limit height for better UX */
+  overflow-y: auto; /* Enable scrolling if there are too many results */
+  background-color: white; /* Ensure visibility */
+  border: 1px solid #ccc; /* Add a border for clarity */
+  border-radius: 4px; /* Optional: rounded corners */
+}
+
+  .search-results .list-group-item {
+    cursor: pointer; /* Change cursor to pointer on hover */
+  }
+
+    /* Hover effect */
+    .search-results .list-group-item:hover {
+      background-color: #f0f0f0; /* Light gray background on hover */
+      color: #000; /* Change text color on hover */
+    }
