@@ -13,7 +13,7 @@
     "build": "vite build",
     "lint": "eslint \"src/**/*.js\"",
     "serve": "vite preview",
-    "start": "vite",
+    "start": "vite --host 192.168.2.125",
     "openmobile": "node ./node_modules/openmobile/ip.js"
   },
   "dependencies": {
