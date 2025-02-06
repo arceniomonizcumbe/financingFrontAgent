@@ -3,16 +3,16 @@ import { useReactToPrint } from 'react-to-print';
 import { CButton, CCard, CCardBody, CCardHeader, CCol, CRow } from '@coreui/react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import ClientValidation from './All/ClientValidation';
 import FinanceValidation from './All/FinanceValidation';
 import { editClient, createClient } from '../../../axios_api/clientService';
-
-const Validation = ({ clientsCompare = [], isAdmin, id }) => {
+const Validation = ({ clientsCompare = [], isAdmin }) => {
   const [sharedData, setSharedData] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const {id} = useParams()
 
   const clientRef = useRef(null);
   const financeRef = useRef(null);
@@ -49,7 +49,7 @@ const Validation = ({ clientsCompare = [], isAdmin, id }) => {
       ...prevState,
       ...data ,
     }));
-    console.log(sharedData)
+    console.log('ola',sharedData)
   };
 
   const handleSubmit = async (event) => {
@@ -60,10 +60,10 @@ const Validation = ({ clientsCompare = [], isAdmin, id }) => {
 
     try {
      
-
+console.log("----", id)
       if (id) {
         await editClient(id, sharedData, 'nome');
-        toast.success('Submetido com sucesso.');
+        toast.success('Submetido 2 com sucesso.');
       } else {
         // Check for duplicate entries
         if (

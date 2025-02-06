@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect  } from 'react';
+import { useParams,  useNavigate } from 'react-router-dom'
+
 import {
   CButton,
   CCard,
@@ -14,10 +16,16 @@ import {
   CFormSelect 
 } from '@coreui/react';
 import { ToastContainer, toast } from 'react-toastify'
+import {
+  ClientList,
+  ListClient,
 
+} from '../../../../axios_api/clientService'
 const FinanceValidation = ({ onChange }) => {
   const [validated, setValidated] = useState(false);
-
+    const [loanData, setLoanData] = useState({})
+    const { id } = useParams()
+const [clientCompare, setClientsCompare] = useState({})
   const [formData, setFormData] = useState({
     employerAddress: '',
     creditType: '',
@@ -33,7 +41,64 @@ const FinanceValidation = ({ onChange }) => {
     data: '',
     loanAmount: '',
     loanType:'',
+    address: '',
   });
+
+
+useEffect(() => {
+      const fetchClientData = async () => {
+        try {
+          let responsew
+          responsew = await ListClient()
+          
+          const clientsArray = Array.isArray(responsew) ? responsew : Object.values(responsew || {})
+          setClientsCompare(clientsArray)
+          let response
+          if (id) {
+            response = await ClientList(id)
+            console.log("id:",response)
+            
+            if (response ) {
+              const data = response
+              setLoanData(data)
+              setFormData({
+
+                name: data.name || '',
+                employerAddress:data.employerAddress || '',
+                creditType: data.creditType ||'',
+                creditPurpose: data.creditPurpose ||'',
+                amountInWords: data.amountInWords ||'',
+                clientName: data.clientName ||'',
+                clientSignature: data.clientSignature ||'',
+                submissionDate: data.submissionDate ||'',
+                sellerSignature: data.sellerSignature ||'',
+                sellerSignatureDate: data.sellerSignatureDate ||'',
+                managerSignature: data.managerSignature ||'',
+                managerSignatureDate: data.managerSignatureDate ||'',
+                data: data.managerSignatureDate ||'',
+                loanAmount:  data.loanAmount ||'',
+                loanType:data.loanType ||'',
+                address: data.address || '',
+                salary: data.salary || '',
+                company: data.company || '',
+              })
+            } else {
+              console.warn('No data found for the provided ID.')
+            }
+          } else {
+            // response = await ListClient(); // Fetching all clients
+            // console.log("Response without ID:", response);
+            // const clientsArray = Array.isArray(response) ? response : Object.values(response || {});
+            // setClients(clientsArray);
+            // console.log("Converted clients array:", clientsArray);
+          }
+        } catch (error) {
+          console.error('Erro ao buscar dados do cliente:', error)
+        }
+      }
+      fetchClientData()
+
+    }, [id])
 
   // Form submit handler
   const handleFormSubmit = (event) => {

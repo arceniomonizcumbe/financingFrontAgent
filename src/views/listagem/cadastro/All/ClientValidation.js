@@ -154,6 +154,7 @@ const ClientValidation = ({ onChange }) => {
           setClientsCompare(clientsArray)
           let response
           if (id) {
+           // console.log("id:",id)
             response = await ClientList(id)
             
             if (response ) {
@@ -709,7 +710,7 @@ const ClientValidation = ({ onChange }) => {
             name="nuit"
             value={formData.nuit}
             onChange={handleChange}
-            disabled={isAdmin}
+            disabled={id}
             required
             maxLength={9}
           />

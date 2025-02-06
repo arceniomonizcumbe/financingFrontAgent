@@ -52,6 +52,7 @@ const Tables = () => {
     marital_status: '',
     gender: '',
     state: '',
+    stateLoan: '',
   })
   const itemsPerPage = 8
   const navigate = useNavigate()
@@ -192,7 +193,10 @@ const Tables = () => {
   }
   const filteredClients = clientes.filter(
     (client) =>
-      ((filters.gender === '' || client.gender === filters.gender)))
+      ((filters.gender === '' || client.gender === filters.gender) && (filters.name =='' || client.name === filters.name) &&
+        (filters.state== '' || client.state == filters.state) && (filters.stateLoan == '' || client.stateLoan === filters.stateLoan)&&
+        (client.name.toLowerCase().includes(searchTerm.toLowerCase()) || (client.id_Number.toLowerCase().includes(searchTerm.toLowerCase())) 
+  )))
   
 
   const handleFilterChange = (e) => {
@@ -257,24 +261,27 @@ const Tables = () => {
                     <option value="">Selecione o Gênero</option>
                     <option value="MALE">Masculino</option>
                     <option value="FEMALE">Feminino</option>
-                    <option value="OTHER">Outro</option>
                   </CFormSelect>
                 </CCol>
                 <CCol md={4}>
                   <CFormSelect
-                    name="marital_status"
-                    value={filters.marital_status}
+                    name="state"
+                    value={filters.state}
                     onChange={handleFilterChange}
                   >
-                    <option value="">Selecione a Situação</option>
-                  </CFormSelect>
-                </CCol>
-                <CCol md={4}>
-                  <CFormSelect name="state" value={filters.state} onChange={handleFilterChange}>
-                    <option value="">Selecione a Situação</option>
+                    <option value="">Selecione a Situação do Cliente</option>
                     <option value="APPROVED">APPROVED</option>
                     <option value="PENDING">PENDING</option>
                     <option value="DECLINED">DECLINED</option>
+                  </CFormSelect>
+                </CCol>
+                <CCol md={4}>
+                  <CFormSelect name="stateLoan" value={filters.stateLoan} onChange={handleFilterChange}>
+                    <option value="">Selecione a Situação do Financiamento</option>
+                    <option value="APPROVED">APPROVED</option>
+                    <option value="PENDING">PENDING</option>
+                    <option value="DECLINED">DECLINED</option>
+                    <option value="LIQUIDATED">LIQUIDATED</option>
                   </CFormSelect>
                 </CCol>
               </CRow>
@@ -346,13 +353,15 @@ const Tables = () => {
                         </CTableDataCell>
                        
                         <CTableDataCell>
-                          {/* <CButton
+                          <CButton
                             color="primary"
                             className="ms-1"
                             onClick={() => handleEdit(cliente.id)}
+                            disabled={cliente.state=="PENDING" || cliente.loanState=="PENDING"}
                           >
                             <CIcon icon={cilPencil} />
                           </CButton>
+                           {/*
                           <CButton
                             color="secondary"
                             className="ms-1"
@@ -438,6 +447,7 @@ const Tables = () => {
                     <CTableDataCell>
                       <CBadge color={getBadge(item.estado)}>{item.estado}</CBadge>
                     </CTableDataCell>
+                    
                     <CTableDataCell>{item.authorizerComment}</CTableDataCell>
                     <CTableDataCell>{item.performedBy}</CTableDataCell>
                   </CTableRow>
