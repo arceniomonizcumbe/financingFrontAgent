@@ -35,15 +35,15 @@ export const createClient = async (cliente) => {
   return response
 }
 
-export const editClient = async (id, cliente, name) => {
+export const editClient = async (id, sharedData, name) => {
   const API_URL = 'http://localhost:8081/externalclient'
 
-  const response = await axios.put(`${API_URL}/${id}`, cliente
+  const response = await axios.put(`${API_URL}/${id}`, sharedData
   //   , {
   //   // params: { performedBy: name },
   // }
 )
-console.log("--------++ ",cliente)
+console.log("--------++ ",sharedData)
   return response.data
 }
 
@@ -372,9 +372,11 @@ export const readExternalClientById = async (id) => {
 export const createFromExternalClient = async (client, name) => {
   console.log('Dados do clientes: ', client)
   const API_URL = 'http://localhost:8081/externalclient/create'
-  const response = await axios.post(API_URL, client, {
-    params: { performedBy: name },
-  })
+  const response = await axios.post(API_URL, client
+  //   , {
+  //   params: { performedBy: name },
+  // }
+)
   console.log('---------: ', response.data)
 
   return response.data

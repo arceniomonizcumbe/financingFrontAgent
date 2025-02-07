@@ -60,10 +60,18 @@ const Validation = ({ clientsCompare = [], isAdmin }) => {
 
     try {
      
-console.log("----", id)
+console.log("----", sharedData)
       if (id) {
-        await editClient(id, sharedData, 'nome');
-        toast.success('Submetido 2 com sucesso.');
+        delete sharedData.state;
+
+        if(sharedData.nuit===null){
+          toast.success('Nao tem como preceguir.');
+          return;
+
+        }else{
+          await editClient(id, sharedData, 'nome');
+          toast.success('Submetido 2 com sucesso.');
+        }
       } else {
         // Check for duplicate entries
         if (
