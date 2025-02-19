@@ -16,10 +16,9 @@ const Validation = ({ clientsCompare = [], isAdmin }) => {
 
   const clientRef = useRef(null);
   const financeRef = useRef(null);
-  
   // Helper to find unfilled inputs
   const findFirstUnfilledInput = (ref) => {
-    if (!ref.current) return null;
+    if (!ref?.current) return null;
     return ref.current.querySelector('input:invalid, select:invalid, textarea:invalid');
   };
 
@@ -27,22 +26,27 @@ const Validation = ({ clientsCompare = [], isAdmin }) => {
   const validateForm = () => {
     const clientUnfilledInput = findFirstUnfilledInput(clientRef);
     if (clientUnfilledInput) {
-      clientUnfilledInput.scrollIntoView({ behavior: 'smooth' });
-      clientUnfilledInput.focus();
+      setTimeout(() => {
+        clientUnfilledInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        clientUnfilledInput.focus();
+      }, 300);
       toast.warning('Por favor, complete o formulário de Validação de Cliente.');
       return false;
     }
-
+  
     const financeUnfilledInput = findFirstUnfilledInput(financeRef);
     if (financeUnfilledInput) {
-      financeUnfilledInput.scrollIntoView({ behavior: 'smooth' });
-      financeUnfilledInput.focus();
+      setTimeout(() => {
+        financeUnfilledInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        financeUnfilledInput.focus();
+      }, 300);
       toast.warning('Por favor, complete o formulário de Validação de Financiamento.');
       return false;
     }
-
+  
     return true;
   };
+  
 
   const handleDataChange = ( data) => {
     setSharedData((prevState) => ({
@@ -131,6 +135,7 @@ console.log("----", sharedData)
           </CCardHeader>
           <CCardBody>
             <ClientValidation
+            value={sharedData}
               onChange={(data) => handleDataChange(data)}
             />
           </CCardBody>
@@ -142,7 +147,7 @@ console.log("----", sharedData)
             <strong>Formulário de Validação de Financiamento</strong>
           </CCardHeader>
           <CCardBody>
-            <FinanceValidation onChange={(data) => handleDataChange(data)} />
+            <FinanceValidation value = {sharedData} onChange={(data) => handleDataChange(data)} />
           </CCardBody>
         </CCard>
       </CCol>

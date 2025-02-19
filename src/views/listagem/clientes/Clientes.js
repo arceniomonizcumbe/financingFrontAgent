@@ -133,6 +133,7 @@ const Tables = () => {
       const response = await getClientSituation(nuit)
       if(response.data){
         const selectedLoan = null
+        
         const associatedClient = response.data
         console.log(associatedClient)
         navigate('/listagem/financiamento/edit', {

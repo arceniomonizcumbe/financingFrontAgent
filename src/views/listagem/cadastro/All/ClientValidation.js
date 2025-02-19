@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState,useRef  } from 'react'
 import { Worker, Viewer } from "@react-pdf-viewer/core";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import { useParams,  useNavigate } from 'react-router-dom'
+import SignatureCanvas from 'react-signature-canvas'
+
 import {
     CButton,
     CCard,
@@ -33,9 +35,10 @@ import {
     editClient,
     getLogByEntityIDName,
   } from '../../../../axios_api/clientService'
-const ClientValidation = ({ onChange }) => {
+const ClientValidation = ({ value, onChange }) => {
   const [pdfFile, setPdfFile] = useState(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const sigCanvas = useRef(null)
 
     const [validated, setValidated] = useState(false)
     const [clients, setClients] = useState([])
@@ -51,11 +54,26 @@ const ClientValidation = ({ onChange }) => {
     const [isAdmin, setIsAdmin] = useState(false)
     const [showToast, setShowToast] = useState(false)
     const [user, setUser] = useState([])
+    const [filePreview, setFilePreview] = useState(null);
+    const [fileName, setFileName] = useState(null);
+
+    const mockJsonResponse = {
+      docSalaryFile: "17ddc39c-6b49-493b-95c1-0ecead658e35.pdf",
+    } 
+    useEffect(() => {
+      if (mockJsonResponse.docSalaryFile) {
+        // Simulando um caminho local da pasta pública (public folder)
+        const filePath = `http://192.168.2.125:8081/uploads/${mockJsonResponse.docSalaryFile}`;
+        console.log("Caminho do arquivo:", filePath); // Debugging  
+              setFilePreview(filePath);
+        setFileName(mockJsonResponse.docSalaryFile);
+      }
+    }, []);
     const [formData, setFormData] = useState({
       name: '',
       birthDate: '',
       id_Number: '',
-      company_ID: '',
+      // company_ID: '',
       nationality: '',
       naturality: '',
       issueDate: '',
@@ -79,50 +97,132 @@ const ClientValidation = ({ onChange }) => {
       formattedId: '',
       contactPersonPhone: '',
       state: 'PENDING',
-      terms: false,
       inputter: '',
       authorizer: '',
       clientSignature: '',
       local:'',
       contractType:'',
-      employerFisicalAddress: '',
       issueCountry:'',
       qualifications:'',
       resident: '',
       province: '',
       country: '',
       floor: '',
-      local:'',
       degreeOfKinship:'',
-      docSignature: null,
-      docResidenceProof: null,
-      docNUIT: null,
-      docIdentity: null,
-      docSalary: null,
+      residenceProofFilePath:'',
+      // docFormSignatureFile: null,
+      docSignatureFile: null,
+      docResidenceProofFile: null,
+      docNUITFile: null,
+      docBIFile: null,
+      docSalaryFile: null,
       politic: '',
       businessPolitic: '',
       familyPolitic: '',
       familyPoliticPosition: '',
       politicPosition: '',
       businessRelation:'',
+      // docClientSignatureFilePath: '',
+      // docSalaryFilePath: '',
+      // docSignatureFilePath:  '',
+      // docFormSignatureFilePath: '',
+      // docResidenceProofFilePath:  '',
+      // docNUITFilePath:  '',
+      // docBIFilePath:  '',
+      
   
     })
-    const [docSignatureFile, setDocSignatureFile] = React.useState(null);
-  const [docResidenceProofFile, setDocResidenceProofFile] = React.useState(null);
-  const [docNUITFile, setDocNUITFile] = React.useState(null);
-  const [docIdentityFile, setDocIdentityFile] = React.useState(null);
-  const [docSalaryFile, setDocSalaryFile] = React.useState(null);
-  const [docClientSignatureFile, setDocClientSignatureFile] = React.useState(null);
+ 
 
+  // const handleFileChange = (event, setFile) => {
+  //   const file = event.target.files[0];
+  //   if (file && file.type === "application/pdf") {
+  //     const fileURL = URL.createObjectURL(file);
+  //     setFile(fileURL);
+  //   } else {
+  //     alert("Por favor, envie um arquivo PDF válido.");
+  //   }
+  // };
+  const handleSignatureChange = () => {
+    if (!sigCanvas.current.isEmpty()) {
+      const signatureDataUrl = sigCanvas.current.toDataURL("image/png");
+  
+      // Converter para Blob corretamente
+      fetch(signatureDataUrl)
+        .then(res => res.blob())
+        .then(blob => {
+          // Criar um objeto File real
+          const file = new File([blob], "signature.png", {
+            type: "image/png",
+            lastModified: new Date().getTime(), // Adiciona timestamp para simular um arquivo real
+          });
+  
+          // Atualiza o estado do formulário com um objeto File válido
+          setFormData(prev => ({
+            ...prev,
+            docSignatureFile: file,
+          }));
+                  toast.success("Assinatura salva com sucesso!");
+          
+        })
+        .catch(error => console.error("Erro ao converter assinatura:", error));
+    } else {
+      toast.warn("Por favor, assine antes de salvar.");
+    }
+  };
+  
+  
+  
+
+  
+  
+  
+  const uploadFile = async (file) => {
+    if (!file) {
+      alert("Nenhum arquivo selecionado.");
+      return;
+    }
+  
+    const formData = new FormData();
+    formData.append("file", file); // "file" deve ser o nome do parâmetro esperado no backend
+  
+    try {
+      const response = await fetch("http://192.168.2.125:8080/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+  
+      if (response.ok) {
+        alert("Arquivo enviado com sucesso!");
+      } else {
+        alert("Falha ao enviar o arquivo.");
+      }
+    } catch (error) {
+      console.error("Erro ao enviar o arquivo:", error);
+      alert("Erro ao enviar o arquivo.");
+    }
+  };
+  
+
+  // const handleFileChange = (event, setFile) => {
+  //   const file = event.target.files[0];
+  //   if (file && file.type === "application/pdf") {
+  //     setFile(file); // Armazena o arquivo diretamente
+  //   } else {
+  //     alert("Por favor, envie um arquivo PDF válido.");
+  //   }
+  // };
   const handleFileChange = (event, setFile) => {
     const file = event.target.files[0];
+  
     if (file && file.type === "application/pdf") {
-      const fileURL = URL.createObjectURL(file);
-      setFile(fileURL);
+      const fileUrl = URL.createObjectURL(file); // Converte para um URL Blob
+      setFile(fileUrl);
     } else {
       alert("Por favor, envie um arquivo PDF válido.");
     }
   };
+  
     const handleFullScreen = () => {
       setIsFullScreen(!isFullScreen);
     };
@@ -159,6 +259,7 @@ const ClientValidation = ({ onChange }) => {
             
             if (response ) {
               const data = response
+              console.log(data)
               setClientData(data)
               setFormData({
                 name: data.name || '',
@@ -196,8 +297,8 @@ const ClientValidation = ({ onChange }) => {
                 user: data.user || '',
                 issueCountry: data.issueCountry || '',
                 company: data.company || '',
-                docNUIT: data.docNUIT || '',
-                docResidenceProof: data.docResidenceProof || '',
+                docNUITFile: data.docNUITFile || '',
+                docResidenceProofFile: data.docResidenceProofFile || '',
                 formattedId: data.formattedId || '',
                 local: data.local || '',
                 clientSignature: data.clientSignature || '',
@@ -213,7 +314,26 @@ const ClientValidation = ({ onChange }) => {
                 businessPolitic: data.businessPolitic || '',
                 businessRelation: data.businessRelation||'',
                 name: data.name || '',
-              })
+                salaryFilePath: data.salaryFilePath 
+                ? `http://192.168.2.125:8081/uploads/${data.salaryFilePath}` 
+                : '',
+            residenceProofFilePath: data.residenceProofFilePath 
+                ? `http://192.168.2.125:8081/uploads/${data.residenceProofFilePath}` 
+                : '',
+            biFilePath: data.biFilePath 
+                ? `http://192.168.2.125:8081/uploads/${data.biFilePath}` 
+                : '',
+            nuitFilePath: data.nuitFilePath 
+                ? `http://192.168.2.125:8081/uploads/${data.nuitFilePath}` 
+                : '',
+         
+                signatureFilePath: data.signatureFilePath 
+                ? `http://192.168.2.125:8081/uploads/${data.signatureFilePath}` 
+                : '',
+            
+                            })
+                            console.log("Arquivo PDF gerado:", formData.residenceProofFilePath);
+
             } else {
               console.warn('No data found for the provided ID.')
             }
@@ -242,30 +362,40 @@ const ClientValidation = ({ onChange }) => {
       }
     };
     const handleChange = (e) => {
-      const { name, value, type, checked } = e.target
-      if (name === 'name' ) {
-
-      }
-  
-      if (name == 'company_ID') {
-        setFormData({
-          ...formData,
-          [name]: type === 'checkbox' ? checked : value,
-          company: { ...formData.company, id: value },
-         // user: { id: user.id },
-        })
+      const { name, type, checked, files, value } = e.target;
+    
+      let newValue;
+    
+      if (type === "file") {
+        const file = files[0] || null;
+        newValue = file;
+    
+        // Generate the file preview URL
+        if (file) {
+          const fileUrl = URL.createObjectURL(file);
+          const filePathKey = name.replace(/File$/, "FilePath"); // Ensure consistent naming
+    
+          setFormData((prevData) => ({
+            ...prevData,
+            [filePathKey]: fileUrl,
+          }));
+        }
       } else {
-        setFormData({
-          ...formData,
-          [name]: type === 'checkbox' ? checked : value,
-        //  user: { id: user.id },
-        })
+        newValue = type === "checkbox" ? checked : value;
       }
-      const updatedData = { ...formData, [name]: value };
+    
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: newValue,
+      }));
+    
+      // Update the data in `onChange`, if necessary
+      const updatedData = { ...formData, [name]: newValue };
+      onChange(updatedData);
+    };
+    
 
-      onChange(updatedData); 
-
-    }
+    
 //     const handleSubmit = async (event) => {
 //       event.preventDefault()
 //    // Check if the form is valid
@@ -377,10 +507,18 @@ const ClientValidation = ({ onChange }) => {
     const maxDateString1 = formatDate(maxDate1)
     const maxDateString2 = formatDate(maxDate2)
     const renderPreview = (fileUrl) =>
-      fileUrl && (
+      !fileUrl ? null :
+      (fileUrl instanceof Blob ? URL.createObjectURL(fileUrl) : fileUrl).startsWith("data:image") ? (
         <div>
+          <h5>Pré-visualização da Assinatura</h5>
+          <h6></h6>
+          <img src={fileUrl instanceof Blob ? URL.createObjectURL(fileUrl) : fileUrl} alt="Assinatura" className="border rounded" width="200px" />
+        </div>
+      ) : (
+        <div>
+        <h6></h6>
           <h5>Pré-visualização do Arquivo</h5>
-          <Worker workerUrl={`https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`}>
+          <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
             <div
               style={{
                 border: "1px solid #ccc",
@@ -388,11 +526,13 @@ const ClientValidation = ({ onChange }) => {
                 overflow: "auto",
               }}
             >
-              <Viewer fileUrl={fileUrl} />
+              <Viewer fileUrl={fileUrl instanceof Blob ? URL.createObjectURL(fileUrl) : fileUrl} />
             </div>
           </Worker>
         </div>
       );
+    
+    
     return (
       <CForm
         className=" row g-3 needs-validation"
@@ -711,7 +851,7 @@ const ClientValidation = ({ onChange }) => {
             value={formData.nuit}
             onChange={handleChange}
             disabled={id}
-            required
+            // required
             maxLength={9}
           />
           <CFormFeedback invalid>Por favor, forneça um NUIT válido.</CFormFeedback>
@@ -724,7 +864,7 @@ const ClientValidation = ({ onChange }) => {
             value={formData.marital_status}
             onChange={handleChange}
             disabled={isAdmin}
-            required
+            // required
           >
             <option value="" disabled>
               Escolha...
@@ -861,7 +1001,7 @@ DADOS PROFISSIONAIS
             type="number"
             id="salary"
             name="salary"
-            value={formData.salary}
+            value={formData.salary || value.salary}
             onChange={handleChange}
             disabled={isAdmin}
             required
@@ -1083,94 +1223,140 @@ DADOS PESSOAIS DO CLIENTE</h4>
         <hr style={{ border: "1px solid #ffc107", margin: "20px 0" }} />
         <h4>Documentos Necessários</h4>
 
-<CCol xs={12} md={6}>
+{/* <CCol xs={12} md={6}>
   <div className="mb-3">
-    <CFormLabel htmlFor="docSignature">
+    <CFormLabel htmlFor="docFormSignature">
       Formulário com Assinatura<span style={{ color: "red" }}>*</span>
     </CFormLabel>
     <CFormInput
       type="file"
-      id="docSignature"
-      name="docSignature"
-      onChange={(e) => handleFileChange(e, setDocSignatureFile)}
+      id="docFormSignature"
+      name="docFormSignature"
+      onChange={(e) => handleChange(e)}
       accept=".pdf"
-      required
+      // required
     />
     <small className="form-text text-muted">Somente arquivos em PDF.</small>
   </div>
-  {renderPreview(docSignatureFile)}
-</CCol>
+  {renderPreview(formData.docFormSignatureFilePath)}
+</CCol> */}
 
 <CCol xs={12} md={6}>
   <div className="mb-3">
-    <CFormLabel htmlFor="docResidenceProof">
+    <CFormLabel htmlFor="docResidenceProofFile">
       Comprovante de Residência<span style={{ color: "red" }}>*</span>
     </CFormLabel>
     <CFormInput
       type="file"
-      id="docResidenceProof"
-      name="docResidenceProof"
-      onChange={(e) => handleFileChange(e, setDocResidenceProofFile)}
+      id="docResidenceProofFile"
+      name="docResidenceProofFile"
+      onChange={handleChange}
       accept=".pdf"
-      required
+      required={!formData.residenceProofFilePath}
     />
     <small className="form-text text-muted">Somente arquivos em PDF.</small>
   </div>
-  {renderPreview(docResidenceProofFile)}
+
+  {formData.docResidenceProofFile
+    ? renderPreview(URL.createObjectURL(formData.docResidenceProofFile))
+    : formData.residenceProofFilePath
+    ? renderPreview(formData.residenceProofFilePath)
+    : null}
 </CCol>
 
 <CCol xs={12} md={6}>
   <div className="mb-3">
-    <CFormLabel htmlFor="docNUIT">
+    <CFormLabel htmlFor="docNUITFile">
       NUIT<span style={{ color: "red" }}>*</span>
     </CFormLabel>
     <CFormInput
       type="file"
-      id="docNUIT"
-      name="docNUIT"
-      onChange={(e) => handleFileChange(e, setDocNUITFile)}
+      id="docNUITFile"
+      name="docNUITFile"
+      onChange={(e) => handleChange(e)}
       accept=".pdf"
-      required
+      required={!formData.nuitFilePath}
+
+      // required
     />
     <small className="form-text text-muted">Somente arquivos em PDF.</small>
   </div>
-  {renderPreview(docNUITFile)}
+  {/* {renderPreview(formData.docNUITFilePath)} */}
+  {formData.docNUITFile
+    ? renderPreview(URL.createObjectURL(formData.docNUITFile))
+    : formData.nuitFilePath
+    ? renderPreview(formData.nuitFilePath)
+    : null}
+  
 </CCol>
 
 <CCol xs={12} md={6}>
   <div className="mb-3">
-    <CFormLabel htmlFor="docIdentity">
-      Bilhete de Identidade Válido<span style={{ color: "red" }}>*</span>
+    <CFormLabel htmlFor="docBIFile">
+      Bilhete de Identidade Válido <span style={{ color: "red" }}>*</span>
     </CFormLabel>
     <CFormInput
       type="file"
-      id="docIdentity"
-      name="docIdentity"
-      onChange={(e) => handleFileChange(e, setDocIdentityFile)}
+      id="docBIFile"
+      name="docBIFile"
+      onChange={(e) => handleChange(e)}
       accept=".pdf"
-      required
+      required={!formData.biFilePath}
+
     />
     <small className="form-text text-muted">Somente arquivos em PDF.</small>
   </div>
-  {renderPreview(docIdentityFile)}
+
+  {/* Exibir pré-visualização do PDF se disponível */}
+  {/* {formData.docBIFile && (
+    <iframe
+      src={URL.createObjectURL(formData.biFilePath
+      )}
+      width="100%"
+      height="300px"
+      title="Pré-visualização do Documento BI"
+    />
+  )} */}
+
+  {/* Link para Download */}
+  {/* {formData.docBIFile && (
+    <a
+      href={URL.createObjectURL(formData.biFilePath)}
+      download={formData.docBIFile.name}
+      className="btn btn-primary mt-2"
+    >
+      Baixar Documento
+    </a>
+  )} */}
+  {formData.docBIFile
+    ? renderPreview(URL.createObjectURL(formData.docBIFile))
+    : formData.biFilePath
+    ? renderPreview(formData.biFilePath)
+    : null}
+  
 </CCol>
 
 <CCol xs={12} md={6}>
   <div className="mb-3">
-    <CFormLabel htmlFor="docSalary">
+    <CFormLabel htmlFor="docSalaryFile">
       Declaração de Salário<span style={{ color: "red" }}>*</span>
     </CFormLabel>
     <CFormInput
       type="file"
-      id="docSalary"
-      name="docSalary"
-      onChange={(e) => handleFileChange(e, setDocSalaryFile)}
+      id="docSalaryFile"
+      name="docSalaryFile"
+      onChange={(e) => handleChange(e)}
       accept=".pdf"
-      required
+      required={!formData.salaryFilePath}
     />
     <small className="form-text text-muted">Somente arquivos em PDF.</small>
   </div>
-  {renderPreview(docSalaryFile)}
+  {formData.docSalaryFile
+    ? renderPreview(URL.createObjectURL(formData.docSalaryFile))
+    : formData.salaryFilePath
+    ? renderPreview(formData.salaryFilePath)
+    : null}
+    
 </CCol>
         <hr style={{ border: '1px solid #ffc107', margin: '20px 0' }} />
         <div className="mb-3">
@@ -1198,22 +1384,112 @@ DADOS PESSOAIS DO CLIENTE</h4>
           <CRow className="mb-3">
             {/* Assinatura do Cliente */}
             <div className="mb-3">
+ {/* <CCol md={6}>
+  <CFormLabel htmlFor="clientSignatureFile" className="fw-bold">
+    ASSINATURA DO CLIENTE: <span style={{ color: "red" }}>*</span>
+  </CFormLabel>
+  <CFormInput
+    type="file"
+    id="clientSignatureFile"
+    name="clientSignatureFile"
+    onChange={handleChange}
+    accept=".pdf, .png, .jpg"
+  />
+</CCol> */}
+{/* 
+<CCol md={6}>
+  <CFormLabel htmlFor="clientSignature" className="fw-bold">
+    ASSINATURA DO CLIENTE:
+  </CFormLabel>
 
-            <CCol md={6}>
-              <CFormLabel htmlFor="docClientSignature" className="fw-bold">
-                ASSINATURA DO CLIENTE:
-              <span style={{ color: 'red' }}>*</span></CFormLabel>
-             <CFormInput
-                type="file"
-                id="docClientSignature"
-                name="docClientSignature"
-                onChange={(e) => handleFileChange(e, setDocClientSignatureFile)}
-                accept=".pdf"
-                required
-              />
-            </CCol>
+  <div className="border rounded p-2">
+    {formData.clientSignatureFile ? (
+      <img
+        src={URL.createObjectURL(formData.clientSignatureFile)}
+        alt="Assinatura do Cliente"
+        className="border rounded"
+        style={{ width: "100%", height: "150px", objectFit: "contain" }}
+      />
+    ) : formData.signatureFilePath ? (
+      <img
+        src={formData.signatureFilePath}
+        alt="Assinatura do Cliente"
+        className="border rounded"
+        style={{ width: "100%", height: "150px", objectFit: "contain" }}
+      />
+    ) : (
+      <SignatureCanvas
+        ref={sigCanvas}
+        penColor="black"
+        canvasProps={{
+          width: 400,
+          height: 150,
+          className: "border rounded",
+        }}
+      />
+    )}
   </div>
-  {renderPreview(docClientSignatureFile)}
+
+  {!formData.clientSignatureFile && !formData.signatureFilePath && (
+    <div className="mt-2">
+      <CButton color="danger" className="me-2" onClick={() => sigCanvas.current.clear()}>
+        Limpar
+      </CButton>
+      <CButton color="primary" onClick={handleSignatureChange}>
+        Salvar
+      </CButton>
+    </div>
+  )}
+</CCol> */}
+{/* olamundo */}
+<CCol md={6}>
+  <CFormLabel htmlFor="clientSignature" className="fw-bold">
+    ASSINATURA DO CLIENTE:
+  </CFormLabel>
+
+  <div className="border rounded p-2">
+    {formData.docSignatureFile ? (
+      <img
+        src={URL.createObjectURL(formData.docSignatureFile)}
+        alt="Assinatura do Cliente"
+        className="border rounded"
+        style={{ width: "100%", height: "150px", objectFit: "contain" }}
+      />
+    ) : formData.signatureFilePath ? (
+      <img
+        src={formData.signatureFilePath}
+        alt="Assinatura do Cliente"
+        className="border rounded"
+        style={{ width: "100%", height: "150px", objectFit: "contain" }}
+      />
+    ) : (
+      <SignatureCanvas
+        ref={sigCanvas}
+        penColor="black"
+        canvasProps={{
+          width: 400,
+          height: 150,
+          className: "border rounded",
+        }}
+      />
+    )}
+  </div>
+
+  {!formData.docSignatureFile && !formData.signatureFilePath && (
+    <div className="mt-2">
+      <CButton color="danger" className="me-2" onClick={() => sigCanvas.current.clear()}>
+        Limpar
+      </CButton>
+      <CButton color="primary" onClick={() => handleSignatureChange()}>
+        Salvar
+      </CButton>
+    </div>
+  )}
+</CCol>
+  {/* Pré-visualização da assinatura */}
+  {renderPreview(formData.docSignatureFilePath)}
+
+</div>
 
             {/* Local */}
             <CCol md={4}>

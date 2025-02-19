@@ -9,6 +9,7 @@ import {
   CFormFeedback,
   CFormInput,
   CFormLabel,
+  CAlert,
   CFormTextarea,
   CModal,
   CModalBody,
@@ -70,6 +71,9 @@ const ValidationModal = ({ isAdmin }) => {
       if (taxaCalculada > taxaEsforcoMaxima) {
         message = `Taxa de esforço excedida: ${taxaCalculada.toFixed(2)}%. Não pode prosseguir.`;
         messageColor = 'red';  // Set the color to red
+        <CAlert color="red" variant="solid">
+        A simple solid primary alert—check it out!
+      </CAlert>
       } else {
         message = `Taxa de esforço dentro do limite: ${taxaCalculada.toFixed(2)}%.`;
         messageColor = 'green';  // Set the color to green
@@ -115,13 +119,13 @@ const ValidationModal = ({ isAdmin }) => {
     const ensureNumber = (value) => (isNaN(value) || value === null ? 0 : Number(value))
  
     const calcularjuro = parseFloat((ensureNumber(amount) * 0.1).toFixed(2))
-    const calculartaxaselo = parseFloat((ensureNumber(amount) * 0.003).toFixed(2))
+    const calculartaxaselo = parseFloat((ensureNumber(amount) * 0.0003).toFixed(2))
     const calcularimpostoselo = parseFloat((calcularjuro * 0.02).toFixed(2))
     const calcularvalorliquido = parseFloat(
-      (ensureNumber(amount) - ensureNumber(insurance) - calculartaxaselo).toFixed(2),
+      (ensureNumber(amount) - ensureNumber(insurance)).toFixed(2),
     )
     const calcularprestacao = parseFloat(
-      (ensureNumber(amount) + calcularjuro + calcularimpostoselo).toFixed(2),
+      (ensureNumber(amount) + calcularjuro + calcularimpostoselo + calculartaxaselo).toFixed(2),
     )
     const calcularjurodemora =
       ensureNumber(nrdediasdemora) > 0
@@ -226,7 +230,7 @@ const ValidationModal = ({ isAdmin }) => {
    <CFormFeedback invalid>Por favor, forneça o valor da taixa válida.</CFormFeedback>
  </CCol>
  <CCol md={2}>
-   <CFormLabel htmlFor="interestRate">Juros a Pagar (10%)</CFormLabel>
+   <CFormLabel htmlFor="interestRate">Juros a Pagar(10%)</CFormLabel>
    <CFormInput
      type="number"
      id="interestRate"
@@ -238,7 +242,7 @@ const ValidationModal = ({ isAdmin }) => {
    <CFormFeedback invalid>Por favor, forneça o valor da taxa válida.</CFormFeedback>
  </CCol>
  <CCol md={2}>
-   <CFormLabel htmlFor="stampFee">Imposto s/o Capital (0,3%)</CFormLabel>
+   <CFormLabel htmlFor="stampFee">Imposto s/o Capital(0,03%)</CFormLabel>
    <CFormInput
      type="number"
      id="stampFee"
@@ -250,7 +254,7 @@ const ValidationModal = ({ isAdmin }) => {
    <CFormFeedback invalid>Por favor, forneça o valor da taxa válida.</CFormFeedback>
  </CCol>
  <CCol md={2}>
-   <CFormLabel htmlFor="clientSelo">Imposto de Selo (2%)</CFormLabel>
+   <CFormLabel htmlFor="clientSelo">Imposto de Selo(2%)</CFormLabel>
    <CFormInput
      type="number"
      id="clientSelo"
