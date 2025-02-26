@@ -119,16 +119,20 @@ useEffect(() => {
                 company: data.company || '',
                 waysOfVAlueReceipt:data.waysOfVAlueReceipt|| '',
                 bankName: data.bankName || '',
+                nib: data.nib || '',
                 wallet: data.wallet || '',
                 bankNumber: data.bankNumber|| '',
                 docManagerSignaturePath: data.docManagerSignaturePath 
-                ? `http://192.168.2.125:8081/uploads/${data.docManagerSignaturePath}` 
+                ? `http://localhost:8081/uploads/${data.docManagerSignaturePath}` 
                 : '',
                 signatureFilePath: data.signatureFilePath 
-                ? `http://192.168.2.125:8081/uploads/${data.signatureFilePath}` 
+                ? `http://localhost:8081/uploads/${data.signatureFilePath}` 
                 : '',
                 docSellerSignaturePath: data.docSellerSignaturePath
-                ? `http://192.168.2.125:8081/uploads/${data.docSellerSignaturePath}`
+                ? `http://localhost:8081/uploads/${data.docSellerSignaturePath}`
+                :'',
+                residenceProofFilePath: data.residenceProofFilePath
+                ? `http://localhost:8081/uploads/${data.residenceProofFilePath}`
                 :'',
               })
             } else {
@@ -231,7 +235,7 @@ useEffect(() => {
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
     let newValue;
-    
+
     if (type === "file") {
       const file = files[0] || null;
       newValue = file;
@@ -259,7 +263,6 @@ useEffect(() => {
     // Update the data in `onChange`, if necessary
     const updatedData = { ...formData, [name]: newValue };
     onChange(updatedData);
-
   };
 
   return (
@@ -485,7 +488,7 @@ que me foram apresentados”.
 
  required /> */}
               </CCol>
-              <CCol md={6}>
+<CCol md={6}>
   <CFormLabel htmlFor="sellerSignature" className="fw-bold">
     ASSINATURA DO VENDEDOR:
   </CFormLabel>

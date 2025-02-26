@@ -63,7 +63,7 @@ const ClientValidation = ({ value, onChange }) => {
     useEffect(() => {
       if (mockJsonResponse.docSalaryFile) {
         // Simulando um caminho local da pasta pública (public folder)
-        const filePath = `http://192.168.2.125:8081/uploads/${mockJsonResponse.docSalaryFile}`;
+        const filePath = `http://localhost:8081/uploads/${mockJsonResponse.docSalaryFile}`;
         console.log("Caminho do arquivo:", filePath); // Debugging  
               setFilePreview(filePath);
         setFileName(mockJsonResponse.docSalaryFile);
@@ -162,8 +162,7 @@ const ClientValidation = ({ value, onChange }) => {
             ...prev,
             docSignatureFile: file,
           }));
-                  toast.success("Assinatura salva com sucesso!");
-          
+                  toast.success("Assinatura salva com sucesso!");         
         })
         .catch(error => console.error("Erro ao converter assinatura:", error));
     } else {
@@ -187,7 +186,7 @@ const ClientValidation = ({ value, onChange }) => {
     formData.append("file", file); // "file" deve ser o nome do parâmetro esperado no backend
   
     try {
-      const response = await fetch("http://192.168.2.125:8080/api/upload", {
+      const response = await fetch("http://localhost:8080/api/upload", {
         method: "POST",
         body: formData,
       });
@@ -244,115 +243,230 @@ const ClientValidation = ({ value, onChange }) => {
         setIsAdmin(user.role === 'ADMIN')
       }
     }, [])
+    // useEffect(() => {
+    //   const fetchClientData = async () => {
+    //     try {
+    //       let responsew
+    //       responsew = await ListClient()
+  
+    //       const clientsArray = Array.isArray(responsew) ? responsew : Object.values(responsew || {})
+    //       setClientsCompare(clientsArray)
+    //       let response
+    //       if (id) {
+    //        // console.log("id:",id)
+    //         response = await ClientList(id)
+            
+    //         if (response ) {
+    //           const data = response
+    //           console.log(data)
+    //           setClientData(data)
+    //           setFormData({
+    //             name: data.name || '',
+    //             birthDate: data.birthDate ? data.birthDate.split('T')[0] : '',
+    //             id_Number: data.id_Number || '',
+    //             nationality: data.nationality || '',
+    //             naturality: data.naturality || '',
+    //             issueDate: data.issueDate ? data.issueDate.split('T')[0] : '',
+    //             validationDate: data.validationDate ? data.validationDate.split('T')[0] : '',
+    //             mother_name: data.mother_name || '',
+    //             father_name: data.father_name || '',
+    //             address: data.address || '',
+    //             city: data.city || '',
+    //             contractType:data.contractType ||'',
+    //             employerFisicalAddress: data.employerFisicalAddress || '',
+    //             nuit: data.nuit || '',
+    //             documentType: data.documentType || '',
+    //             classification: data.classification || '',
+    //             marital_status: data.marital_status || '',
+    //             gender: data.gender || '',
+    //             pep: data.pep || '',
+    //             resident: data.resident || '',
+    //             qualifications: data.qualifications || '',
+    //             profession: data.profession || '',
+    //             employer: data.employer || '',
+    //             salary: data.salary || '',
+    //             contact: data.contact || '',
+    //             email: data.email || '',
+    //             contactPersonName: data.contactPersonName || '',
+    //             contactPersonPhone: data.contactPersonPhone || '',
+    //             terms: data.terms || false,
+    //             state: isAdmin ? formData.state || '' : 'PENDING',
+    //             inputter: data.inputter || '',
+    //             authorizer: data.authorizer || '',
+    //             user: data.user || '',
+    //             issueCountry: data.issueCountry || '',
+    //             company: data.company || '',
+    //             docNUITFile: data.docNUITFile || '',
+    //             docResidenceProofFile: data.docResidenceProofFile || '',
+    //             formattedId: data.formattedId || '',
+    //             local: data.local || '',
+    //             clientSignature: data.clientSignature || '',
+    //             country: data.country || '',
+    //             province: data.province || '',
+    //             degreeOfKinship: data.degreeOfKinship || '',
+    //             floor: data.floor || '',
+    //             id: data.id || '',
+    //             politic: data.politic || '',
+    //             politicPosition: data.politicPosition || '',
+    //             familyPolitic: data.familyPolitic || '',
+    //             familyPoliticPosition: data.familyPoliticPosition ||'',
+    //             businessPolitic: data.businessPolitic || '',
+    //             businessRelation: data.businessRelation||'',
+    //             name: data.name || '',
+    //             salaryFilePath: data.salaryFilePath 
+    //             ? `http://localhost:8081/uploads/${data.salaryFilePath}` : 
+    //             salaryFilePath: data.salaryFilePath 
+    //             ? `http://localhost:8080/uploads/${data.salaryFilePath}` 
+    //             : '',
+    //         residenceProofFilePath: data.residenceProofFilePath 
+    //             ? `http://localhost:8081/uploads/${data.residenceProofFilePath}` 
+    //             : '',
+    //         biFilePath: data.biFilePath 
+    //             ? `http://localhost:8081/uploads/${data.biFilePath}` 
+    //             : '',
+    //         nuitFilePath: data.nuitFilePath 
+    //             ? `http://localhost:8081/uploads/${data.nuitFilePath}` 
+    //             : '',
+         
+    //             signatureFilePath: data.signatureFilePath 
+    //             ? `http://localhost:8081/uploads/${data.signatureFilePath}` 
+    //             : '',
+            
+    //                         })
+    //                         console.log("Arquivo PDF gerado:", formData.residenceProofFilePath);
+
+    //         } else {
+    //           console.warn('No data found for the provided ID.')
+    //         } 
+    //       } else {
+    //         // response = await ListClient(); // Fetching all clients
+    //         // console.log("Response without ID:", response);
+    //         // const clientsArray = Array.isArray(response) ? response : Object.values(response || {});
+    //         // setClients(clientsArray);
+    //         // console.log("Converted clients array:", clientsArray);
+    //       }
+    //     } catch (error) {
+    //       console.error('Erro ao buscar dados do cliente:', error)
+    //     }
+    //   }
+  
+    //   if (isAdmin !== undefined) {
+    //     fetchClientData()
+    //   }
+    // }, [id, isAdmin])
     useEffect(() => {
       const fetchClientData = async () => {
-        try {
-          let responsew
-          responsew = await ListClient()
+          try {
+              let responsew = await ListClient();
+              const clientsArray = Array.isArray(responsew) ? responsew : Object.values(responsew || {});
+              setClientsCompare(clientsArray);
+              
+              if (id) {
+                  let response = await ClientList(id);
   
-          const clientsArray = Array.isArray(responsew) ? responsew : Object.values(responsew || {})
-          setClientsCompare(clientsArray)
-          let response
-          if (id) {
-           // console.log("id:",id)
-            response = await ClientList(id)
-            
-            if (response ) {
-              const data = response
-              console.log(data)
-              setClientData(data)
-              setFormData({
-                name: data.name || '',
-                birthDate: data.birthDate ? data.birthDate.split('T')[0] : '',
-                id_Number: data.id_Number || '',
-                nationality: data.nationality || '',
-                naturality: data.naturality || '',
-                issueDate: data.issueDate ? data.issueDate.split('T')[0] : '',
-                validationDate: data.validationDate ? data.validationDate.split('T')[0] : '',
-                mother_name: data.mother_name || '',
-                father_name: data.father_name || '',
-                address: data.address || '',
-                city: data.city || '',
-                contractType:data.contractType ||'',
-                employerFisicalAddress: data.employerFisicalAddress || '',
-                nuit: data.nuit || '',
-                documentType: data.documentType || '',
-                classification: data.classification || '',
-                marital_status: data.marital_status || '',
-                gender: data.gender || '',
-                pep: data.pep || '',
-                resident: data.resident || '',
-                qualifications: data.qualifications || '',
-                profession: data.profession || '',
-                employer: data.employer || '',
-                salary: data.salary || '',
-                contact: data.contact || '',
-                email: data.email || '',
-                contactPersonName: data.contactPersonName || '',
-                contactPersonPhone: data.contactPersonPhone || '',
-                terms: data.terms || false,
-                state: isAdmin ? formData.state || '' : 'PENDING',
-                inputter: data.inputter || '',
-                authorizer: data.authorizer || '',
-                user: data.user || '',
-                issueCountry: data.issueCountry || '',
-                company: data.company || '',
-                docNUITFile: data.docNUITFile || '',
-                docResidenceProofFile: data.docResidenceProofFile || '',
-                formattedId: data.formattedId || '',
-                local: data.local || '',
-                clientSignature: data.clientSignature || '',
-                country: data.country || '',
-                province: data.province || '',
-                degreeOfKinship: data.degreeOfKinship || '',
-                floor: data.floor || '',
-                id: data.id || '',
-                politic: data.politic || '',
-                politicPosition: data.politicPosition || '',
-                familyPolitic: data.familyPolitic || '',
-                familyPoliticPosition: data.familyPoliticPosition ||'',
-                businessPolitic: data.businessPolitic || '',
-                businessRelation: data.businessRelation||'',
-                name: data.name || '',
-                salaryFilePath: data.salaryFilePath 
-                ? `http://192.168.2.125:8081/uploads/${data.salaryFilePath}` 
-                : '',
-            residenceProofFilePath: data.residenceProofFilePath 
-                ? `http://192.168.2.125:8081/uploads/${data.residenceProofFilePath}` 
-                : '',
-            biFilePath: data.biFilePath 
-                ? `http://192.168.2.125:8081/uploads/${data.biFilePath}` 
-                : '',
-            nuitFilePath: data.nuitFilePath 
-                ? `http://192.168.2.125:8081/uploads/${data.nuitFilePath}` 
-                : '',
-         
-                signatureFilePath: data.signatureFilePath 
-                ? `http://192.168.2.125:8081/uploads/${data.signatureFilePath}` 
-                : '',
-            
-                            })
-                            console.log("Arquivo PDF gerado:", formData.residenceProofFilePath);
-
-            } else {
-              console.warn('No data found for the provided ID.')
-            }
-          } else {
-            // response = await ListClient(); // Fetching all clients
-            // console.log("Response without ID:", response);
-            // const clientsArray = Array.isArray(response) ? response : Object.values(response || {});
-            // setClients(clientsArray);
-            // console.log("Converted clients array:", clientsArray);
+                  if (response) {
+                      const data = response;
+                      console.log(data);
+  
+                      // Função para verificar se a imagem existe na porta 8081, caso contrário, usar 8080
+                      const getFilePath = async (fileName) => {
+                          if (!fileName) return ''; // Retorna vazio se não houver nome de arquivo
+                          
+                          const url8081 = `http://localhost:8081/uploads/${fileName}`;
+                          const url8080 = `http://localhost:8080/uploads/${fileName}`;
+  
+                          try {
+                              const res = await fetch(url8081, { method: 'HEAD' });
+                              if (res.ok) return url8081;
+                          } catch (error) {
+                              console.warn(`Arquivo não encontrado na porta 8081: ${fileName}, tentando 8080...`);
+                          }
+                          
+                          return url8080; // Retorna a URL na porta 8080 se a 8081 falhar
+                      };
+  
+                      // Buscar caminhos das imagens de forma assíncrona
+                      const salaryFilePath = await getFilePath(data.salaryFilePath);
+                      const residenceProofFilePath = await getFilePath(data.residenceProofFilePath);
+                      const biFilePath = await getFilePath(data.biFilePath);
+                      const nuitFilePath = await getFilePath(data.nuitFilePath);
+                      const signatureFilePath = await getFilePath(data.signatureFilePath);
+  
+                      setClientData(data);
+                      setFormData({
+                          name: data.name || '',
+                          birthDate: data.birthDate ? data.birthDate.split('T')[0] : '',
+                          id_Number: data.id_Number || '',
+                          nationality: data.nationality || '',
+                          naturality: data.naturality || '',
+                          issueDate: data.issueDate ? data.issueDate.split('T')[0] : '',
+                          validationDate: data.validationDate ? data.validationDate.split('T')[0] : '',
+                          mother_name: data.mother_name || '',
+                          father_name: data.father_name || '',
+                          address: data.address || '',
+                          city: data.city || '',
+                          contractType: data.contractType || '',
+                          employerFisicalAddress: data.employerFisicalAddress || '',
+                          nuit: data.nuit || '',
+                          documentType: data.documentType || '',
+                          classification: data.classification || '',
+                          marital_status: data.marital_status || '',
+                          gender: data.gender || '',
+                          pep: data.pep || '',
+                          resident: data.resident || '',
+                          qualifications: data.qualifications || '',
+                          profession: data.profession || '',
+                          employer: data.employer || '',
+                          salary: data.salary || '',
+                          contact: data.contact || '',
+                          email: data.email || '',
+                          contactPersonName: data.contactPersonName || '',
+                          contactPersonPhone: data.contactPersonPhone || '',
+                          terms: data.terms || false,
+                          state: isAdmin ? formData.state || '' : 'PENDING',
+                          inputter: data.inputter || '',
+                          authorizer: data.authorizer || '',
+                          user: data.user || '',
+                          issueCountry: data.issueCountry || '',
+                          company: data.company || '',
+                          docNUITFile: data.docNUITFile || '',
+                          docResidenceProofFile: data.docResidenceProofFile || '',
+                          formattedId: data.formattedId || '',
+                          local: data.local || '',
+                          clientSignature: data.clientSignature || '',
+                          country: data.country || '',
+                          province: data.province || '',
+                          degreeOfKinship: data.degreeOfKinship || '',
+                          floor: data.floor || '',
+                          id: data.id || '',
+                          politic: data.politic || '',
+                          politicPosition: data.politicPosition || '',
+                          familyPolitic: data.familyPolitic || '',
+                          familyPoliticPosition: data.familyPoliticPosition || '',
+                          businessPolitic: data.businessPolitic || '',
+                          businessRelation: data.businessRelation || '',
+                          salaryFilePath,
+                          residenceProofFilePath,
+                          biFilePath,
+                          nuitFilePath,
+                          signatureFilePath
+                      });
+  
+                      console.log("Arquivo PDF gerado:", residenceProofFilePath);
+                  } else {
+                      console.warn('Nenhum dado encontrado para o ID fornecido.');
+                  }
+              }
+          } catch (error) {
+              console.error('Erro ao buscar dados do cliente:', error);
           }
-        } catch (error) {
-          console.error('Erro ao buscar dados do cliente:', error)
-        }
-      }
+      };
   
       if (isAdmin !== undefined) {
-        fetchClientData()
+          fetchClientData();
       }
-    }, [id, isAdmin])
+  }, [id, isAdmin]);
+  
     const handleDownload = () => {
       if (pdfFile) {
         const link = document.createElement("a");
