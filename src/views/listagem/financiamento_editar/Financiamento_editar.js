@@ -14,7 +14,9 @@ import {
   CListGroupItem,
   CFormSelect,
   CSpinner,
+  CFormText,
   CRow,
+  CFormCheck,
   CFormTextarea,
 } from '@coreui/react'
 import { toast, ToastContainer } from 'react-toastify'
@@ -22,6 +24,8 @@ import { ClientList, updateClient } from '../../../axios_api/clientService'
 import debounce from 'lodash.debounce'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../../AuthContext'
+import SignatureCanvas from 'react-signature-canvas'
+import { Worker, Viewer } from "@react-pdf-viewer/core";
 
 const FinanceValidation = ({ formData, setFormData }) => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -201,15 +205,73 @@ const Validation = () => {
     authorizer: '',
     state: '',
   })
-
+  const sellerSigCanvas = useRef(null)
+  const clientSigCanvas = useRef(null)
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      ...client,
-      [name]: type === 'checkbox' ? checked : value,
-    }))
-  }
+    const { name, value, type, checked, files } = e.target;
+    let newValue;
+
+    if (type === "file") {
+      const file = files[0] || null;
+      newValue = file;
+  
+      // Generate the file preview URL
+      if (file) {
+        const fileUrl = URL.createObjectURL(file);
+        const filePathKey = name.replace(/File$/, "FilePath"); // Ensure consistent naming
+  
+        setFormData((prevData) => ({
+          ...prevData,
+          [filePathKey]: fileUrl,
+        }));
+      }
+    }
+    else {
+      newValue = type === "checkbox" ? checked : value;
+    }
+  
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: newValue,
+    }));
+  
+
+  };
+
+  const handleSignatureChange = (signatureType) => {
+      const canvasRef = signatureType === "seller" ? sellerSigCanvas : clientSigCanvas;
+    
+      // Verifica se o ref está pronto e se o canvas não está vazio
+      if (!canvasRef.current || canvasRef.current.isEmpty()) {
+        toast.warn("Por favor, assine antes de salvar.");
+        return;
+      }
+    
+      // Converte a assinatura para uma URL de dados
+      const signatureDataUrl = canvasRef.current.toDataURL("image/png");
+    
+      // Converte a URL de dados em um arquivo Blob
+      fetch(signatureDataUrl)
+        .then((res) => res.blob())
+        .then((blob) => {
+          const file = new File([blob], `${signatureType}Signature.png`, {
+            type: "image/png",
+            lastModified: new Date().getTime(),
+          });
+    
+          // Atualiza o estado do formulário com o arquivo de assinatura
+          setFormData((prev) => ({
+            ...prev,
+            [signatureType === "seller" ? "docSellerSignatureFile" : "docClientSignatureFile"]: file,
+          }));
+    
+          toast.success("Assinatura salva com sucesso!");
+        })
+        .catch((error) => {
+          console.error(`Erro ao converter ${signatureType} assinatura:`, error);
+          toast.error("Erro ao salvar assinatura.");
+        });
+    };
   useEffect(() => {
     console.log('Dados do formulário atualizados:', formData);
   }, [formData]);
@@ -231,7 +293,31 @@ const Validation = () => {
       }
     }
   }
-
+const renderPreview = (fileUrl) =>
+      !fileUrl ? null :
+      (fileUrl instanceof Blob ? URL.createObjectURL(fileUrl) : fileUrl).startsWith("data:image") ? (
+        <div>
+          <h5>Pré-visualização da Assinatura</h5>
+          <h6></h6>
+          <img src={fileUrl instanceof Blob ? URL.createObjectURL(fileUrl) : fileUrl} alt="Assinatura" className="border rounded" width="200px" />
+        </div>
+      ) : (
+        <div>
+        <h6></h6>
+          <h5>Pré-visualização do Arquivo</h5>
+          <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
+            <div
+              style={{
+                border: "1px solid #ccc",
+                height: "500px",
+                overflow: "auto",
+              }}
+            >
+              <Viewer fileUrl={fileUrl instanceof Blob ? URL.createObjectURL(fileUrl) : fileUrl} />
+            </div>
+          </Worker>
+        </div>
+      );
   const checkLogedUser = () => {
     const user = JSON.parse(localStorage.getItem('user'))
     if (user) return user
@@ -364,7 +450,7 @@ const maxDateString = formatDate(maxDate);
                      validated={validated}
                      onSubmit={handleSubmit}
                    >
-                                                <h4 className="text-warning">Dados do Empregador</h4>
+                    <h4 className="text-warning">Dados do Empregador</h4>
 
                      <CCol md={4}>
                        <CFormLabel htmlFor="loanAmount">Valor do Empréstimo</CFormLabel>
@@ -518,7 +604,7 @@ const maxDateString = formatDate(maxDate);
      
                    </CCol>
        {/* Assinatura do Vendedor */}
-     <CCol md={6}>
+     {/* <CCol md={6}>
          <CFormLabel htmlFor="sellerSignature">Assinatura do Vendedor</CFormLabel>
          <CFormInput
            type="file"
@@ -528,9 +614,9 @@ const maxDateString = formatDate(maxDate);
            required
          />
      <CFormFeedback invalid>Por favor, Assinatura do vendor é mandatário.</CFormFeedback>
-       </CCol>
+       </CCol> */}
      
-       <CCol md={6}>
+       {/* <CCol md={6}>
          <CFormLabel htmlFor="clientSignature">Assinatura do Cliente</CFormLabel>
          <CFormInput
            type="file"
@@ -540,7 +626,251 @@ const maxDateString = formatDate(maxDate);
            required
          />
      <CFormFeedback invalid>Por favor, Assinatura do cliente é mandatário.</CFormFeedback>
+     </CCol> */}
+     {/* ola mundo */}
+                   <h4 className='text-warning'>Meios de Transferência</h4>
+                   
+                           <CFormText
+                           component="p"
+                           className="text-warning mt-3"
+                           style={{ fontSize: "12px", textAlign: "center" }}
+                         >
+                          (Escolha o meio no qual quer receber o valor do crédito. Para garantir que o valor solicitado seja transferido corretamente, preencha com atenção
+                           os dados da sua conta bancária ou carteira móvel, certifique-se de inserir todas as informações de forma clara e precisa)
+                         </CFormText>
+                        
+                         <CRow className="mb-3">
+       <CCol>
+         <CFormLabel style={{ fontWeight: "bold" }}>
+           Que meio pretende receber o valor do crédito?
+           <span style={{ color: 'red' }}>*</span>
+         </CFormLabel>
+         <CFormCheck
+           type="radio"
+           id="BANK"
+           name="waysOfVAlueReceipt"
+           value="BANK"
+           label="Banco"
+           checked={formData.waysOfVAlueReceipt === "BANK"}
+           onChange={handleChange}
+           required
+         />
+         <CFormCheck
+           type="radio"
+           id="MOBILEWALLET"
+           name="waysOfVAlueReceipt"
+           value="MOBILEWALLET"
+           label="Carteira Móvel"
+           checked={formData.waysOfVAlueReceipt === "MOBILEWALLET"}
+           onChange={handleChange}
+           required
+         />
+       </CCol>
+       {formData.waysOfVAlueReceipt === "BANK" && (
+         <CRow>
+           <CCol md={6} className="mb-3">
+             <CFormLabel htmlFor="bankName">Nome do Banco</CFormLabel>
+             <CFormInput
+               type="text"
+               id="bankName"
+               name="bankName"
+               value={formData.bankName}
+               onChange={handleChange}
+               required
+             />
+           </CCol>
+           <CCol md={6} className="mb-3">
+             <CFormLabel htmlFor="nib">NIB</CFormLabel>
+             <CFormInput
+               type="number"
+               id="nib"
+               name="nib"
+               value={formData.nib}
+               onChange={handleChange}
+               required
+               min={0}
+               maxLength={21}
+             />
+           </CCol>
+         </CRow>
+       )}
+       {formData.waysOfVAlueReceipt === "MOBILEWALLET" && (
+         <CRow className="mb-3 align-items-center"> {/* Adicionei align-items-center aqui */}
+           <CCol md={6}>
+             <CFormLabel htmlFor="wallet">Carteira Móvel</CFormLabel>
+             <CFormSelect
+               id="wallet"
+               name="wallet"
+               value={formData.wallet}
+               onChange={handleChange}
+               required
+             >
+               <option value="">Selecione</option>
+               <option value="MPESA">M-Pesa</option>
+               <option value="EMOLA">E-Mola</option>
+               <option value="MKESH">Mkesh</option>
+             </CFormSelect>
+           </CCol>
+           <CCol md={6}>
+             <CFormLabel htmlFor="bankNumber">Número à receber</CFormLabel>
+             <CFormInput
+               type="number"
+               id="bankNumber"
+               name="bankNumber"
+               value={formData.bankNumber}
+               onChange={handleChange}
+               required
+             />
+           </CCol>
+         </CRow>
+       )}
+     </CRow>
+     
+                   <h4 className="text-warning">Declaração do Cliente</h4>
+                   <p>
+                     Eu, <CFormInput type="text" className="d-inline w-50" id="name" name="name" value={formData.name} onChange={handleChange} required />, declaro que as informações fornecidas neste formulário de registro são verdadeiras, completas e precisas.
+     Autorizo o banco a realizar as verificações necessárias para validar os dados informados, incluindo consultas a órgãos públicos e outras fontes relevantes, conforme
+     permitido pela legislação vigente. Comprometo-me a informar o banco sobre qualquer alteração nos dados fornecidos, bem como a manter minhas informações actualizadas.
+     Declaro que li e estou ciente das condições gerais do banco, incluindo suas políticas de privacidade e de uso de dados pessoais, e aceito os termos e condições
+     que me foram apresentados”.
+                   </p>
+                   
+                   {/* Assinaturas */}
+                  <CRow >
+               
+                        
+                  <CCol md={6}>
+       <CFormLabel htmlFor="clientSignature" className="fw-bold">
+         ASSINATURA DO CLIENTE:
+       </CFormLabel>
+     
+       <div className="border rounded p-2">
+         {formData.docClientSignatureFile ? (
+           <img
+             src={URL.createObjectURL(formData.docClientSignatureFile)}
+             alt="Assinatura do Cliente"
+             className="border rounded"
+             style={{ width: "100%", height: "150px", objectFit: "contain" }}
+           />
+         ) : formData.signatureFilePath ? (
+           <img
+             src={formData.signatureFilePath}
+             alt="Assinatura do Cliente"
+             className="border rounded"
+             style={{ width: "100%", height: "150px", objectFit: "contain" }}
+           />
+         ) : (
+           <SignatureCanvas
+             ref={clientSigCanvas}
+             penColor="black"
+             canvasProps={{
+               width: 400,
+               height: 150,
+               className: "border rounded",
+             }}
+           />
+         )}
+       </div>
+     
+       {!formData.docClientSignatureFile && !formData.signatureFilePath && (
+         <div className="mt-2">
+           <CButton color="danger" className="me-2" onClick={() => clientSigCanvas.current.clear()}>
+             Limpar
+           </CButton>
+           <CButton color="primary" onClick={() => handleSignatureChange("client")}>
+             Salvar
+           </CButton>
+         </div>
+       )}
      </CCol>
+                  </CRow>
+                  <h4 className="text-warning">A Ser Preenchido pela Máximo Micro Banco S.A</h4>
+                  <CRow>
+                  <CCol md={10} className="mb-3">
+                  {/* <CFormLabel htmlFor="sellerSignature">Assinatura do Vendedor</CFormLabel>
+                  <CFormInput type="file" id="sellerSignature" name="sellerSignature" onChange={handleChange}       accept=".pdf"
+     
+      required /> */}
+                   </CCol>
+    <CCol md={6}>
+      <CFormLabel htmlFor="sellerSignature" className="fw-bold">
+        ASSINATURA DO VENDEDOR:
+      </CFormLabel>
+    
+      <div className="border rounded p-2">
+        {formData.docSellerSignatureFile ? (
+          <img
+            src={URL.createObjectURL(formData.docSellerSignatureFile)}
+            alt="Assinatura do Vendedor"
+            className="border rounded"
+            style={{ width: "100%", height: "150px", objectFit: "contain" }}
+          />
+        ) : formData.docSellerSignaturePath ? (
+          <img
+            src={formData.docSellerSignaturePath}
+            alt="Assinatura do Vendedor"
+            className="border rounded"
+            style={{ width: "100%", height: "150px", objectFit: "contain" }}
+          />
+        ) : (
+          <SignatureCanvas
+            ref={sellerSigCanvas}
+            penColor="black"
+            canvasProps={{
+              width: 400,
+              height: 150,
+              className: "border rounded",
+            }}
+          />
+        )}
+      </div>
+    
+      {!formData.docSellerSignatureFile && !formData.docSellerSignaturePath && (
+        <div className="mt-2">
+          <CButton color="danger" className="me-2" onClick={() => sellerSigCanvas.current.clear()}>
+            Limpar
+          </CButton>
+          <CButton color="primary" onClick={() => handleSignatureChange("seller")}>
+            Salvar
+          </CButton>
+        </div>
+      )}
+    </CCol>
+                   <CCol md={2} className="mb-3">
+                   <CFormLabel htmlFor="sellerSignatureDate">Data</CFormLabel>
+                   <CFormInput type="date" id="sellerSignatureDate" name="sellerSignatureDate" value={formData.sellerSignatureDate || new Date().toISOString().split('T')[0]} onChange={handleChange} required />
+                   </CCol>
+                  </CRow>
+                  <CRow>
+  <CCol md={10} >
+               <div className="mb-3">
+                 <CFormLabel htmlFor="docManagerSignatureFile">
+                 Assinatura do Gestor e Carimbo do Banco<span style={{ color: "red" }}>*</span>
+                 </CFormLabel>
+                 <CFormInput
+                   type="file"
+                   id="docManagerSignatureFile"
+                   name="docManagerSignatureFile"
+                   onChange={(e) => handleChange(e)}
+                   accept=".pdf"
+                   required={!formData.docManagerSignaturePath}
+                 />
+                 <small className="form-text text-muted">Somente arquivos em PDF.</small>
+               </div>
+               {formData.docManagerSignatureFile
+                 ? renderPreview(URL.createObjectURL(formData.docManagerSignatureFile))
+                 : formData.docManagerSignaturePath
+                 ? renderPreview(formData.docManagerSignaturePath)
+                 : null}
+                 
+             </CCol>
+                   <CCol md={2} className="mb-3">
+                   <CFormLabel htmlFor="managerSignatureDate">Data</CFormLabel>
+                   <CFormInput type="date" id="managerSignatureDate" name="managerSignatureDate" value={formData.managerSignatureDate || new Date().toISOString().split('T')[0]} onChange={handleChange} required />
+                   </CCol>
+                  </CRow>
+                  
+     {/* ola mundo */}
                      <CCol md={6}>
                        <CFormLabel htmlFor="inputter">Inputter</CFormLabel>
                        <CFormTextarea

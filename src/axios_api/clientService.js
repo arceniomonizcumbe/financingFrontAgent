@@ -67,14 +67,50 @@ export const createClient = async (cliente) => {
   formData.append('clientData', JSON.stringify(clientData));
 
   // Adicionar os arquivos (somente se existirem)
-  if (cliente.docSignatureFile) formData.append('docSignatureFile', cliente.docSignatureFile);
-  if (cliente.docResidenceProofFile) formData.append('docResidenceProofFile', cliente.docResidenceProofFile);
-  if (cliente.docSalaryFile) formData.append('docSalaryFile', cliente.docSalaryFile);
-  if (cliente.docNUITFile) formData.append('docNUITFile', cliente.docNUITFile);
-  if (cliente.docBIFile) formData.append('docBIFile', cliente.docBIFile);
-  if (cliente.docManagerSignatureFile) formData.append('docManagerSignatureFile', cliente.docManagerSignatureFile);
-  if (cliente.docSellerSignatureFile) formData.append('docSellerSignatureFile', cliente.docSellerSignatureFile);
-
+  //const formData = new FormData();
+  formData.append('clientData', JSON.stringify(clientData));
+  
+  if (cliente.docSignatureFile) {
+    console.log("🔹 docSignatureFile:", cliente.docSignatureFile.name);
+    formData.append('docSignatureFile', cliente.docSignatureFile);
+  }
+  
+  if (cliente.docResidenceProofFile) {
+    console.log("🔹 docResidenceProofFile:", cliente.docResidenceProofFile.name);
+    formData.append('docResidenceProofFile', cliente.docResidenceProofFile);
+  }
+  
+  if (cliente.docSalaryFile) {
+    console.log("🔹 docSalaryFile:", cliente.docSalaryFile.name);
+    formData.append('docSalaryFile', cliente.docSalaryFile);
+  }
+  
+  if (cliente.docNUITFile) {
+    console.log("🔹 docNUITFile:", cliente.docNUITFile.name);
+    formData.append('docNUITFile', cliente.docNUITFile);
+  }
+  
+  if (cliente.docBIFile) {
+    console.log("🔹 docBIFile:", cliente.docBIFile.name);
+    formData.append('docBIFile', cliente.docBIFile);
+  }
+  
+  if (cliente.docManagerSignatureFile) {
+    console.log("🔹 docManagerSignatureFile:", cliente.docManagerSignatureFile.name);
+    formData.append('docManagerSignatureFile', cliente.docManagerSignatureFile);
+  }
+  
+  if (cliente.docSellerSignatureFile) {
+    console.log("🔹 docSellerSignatureFile:", cliente.docSellerSignatureFile.name);
+    formData.append('docSellerSignatureFile', cliente.docSellerSignatureFile);
+  }
+  
+  // Verificar se os arquivos estão no formData
+  for (let pair of formData.entries()) {
+    console.log(`${pair[0]}:`, pair[1]);
+  }
+  
+  
   try {
     // Enviar requisição usando axios
     const response = await axios.post(API_URL, formData);
