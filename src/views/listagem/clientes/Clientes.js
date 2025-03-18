@@ -358,7 +358,7 @@ const Tables = () => {
                             color="primary"
                             className="ms-1"
                             onClick={() => handleEdit(cliente.id)}
-                            disabled={cliente.state=="PENDING" || cliente.loanState=="PENDING"}
+                            // disabled={cliente.state=="PENDING" || cliente.loanState=="PENDING"}
                           >
                             <CIcon icon={cilPencil} />
                           </CButton>

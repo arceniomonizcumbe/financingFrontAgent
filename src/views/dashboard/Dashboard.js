@@ -120,23 +120,23 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchData(ListClient, setClients, 'clients')
-    fetchData(paymentList, setPayments, 'payments')
-    fetchData(companyList, (data) => setCompany(data.data || []), 'company')
+    //fetchData(paymentList, setPayments, 'payments')
+  //  fetchData(companyList, (data) => setCompany(data.data || []), 'company')
 
-    const fetchLoans = async () => {
-      try {
-        const data = await LoanList()
-        if (Array.isArray(data)) {
-          setLoans(data)
-        } else {
-          console.error('Invalid loans data:', data)
-        }
-      } catch (error) {
-        console.error('Error fetching loans:', error)
-      }
-    }
+    // const fetchLoans = async () => {
+    //   try {
+    //     const data = await LoanList()
+    //     if (Array.isArray(data)) {
+    //       setLoans(data)
+    //     } else {
+    //       console.error('Invalid loans data:', data)
+    //     }
+    //   } catch (error) {
+    //     console.error('Error fetching loans:', error)
+    //   }
+    // }
 
-    fetchLoans()
+    // fetchLoans()
   }, [])
 
   const totalClients = clients.length

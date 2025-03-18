@@ -13,7 +13,6 @@ const Validation = ({ clientsCompare = [], isAdmin }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const {id} = useParams()
-
   const clientRef = useRef(null);
   const financeRef = useRef(null);
   // Helper to find unfilled inputs
@@ -21,7 +20,21 @@ const Validation = ({ clientsCompare = [], isAdmin }) => {
     if (!ref?.current) return null;
     return ref.current.querySelector('input:invalid, select:invalid, textarea:invalid');
   };
-
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const response = await companyApprovedList();
+  //       if (response) {
+  //         setListaCompany(response);
+  //       }
+  //     } catch (error) {
+  //       console.error("Erro ao buscar a lista de empresas aprovadas:", error);
+  //     }
+  //   };
+  
+  //   fetchData();
+  // }, []);
+  
   // Validate both forms
   const validateForm = () => {
     const clientUnfilledInput = findFirstUnfilledInput(clientRef);
@@ -64,9 +77,9 @@ const Validation = ({ clientsCompare = [], isAdmin }) => {
 
     try {
      
-console.log("----", sharedData)
       if (id) {
         delete sharedData.state;
+        console.log("----", sharedData)
 
         if(sharedData.nuit===null){
           toast.success('Nao tem como preceguir.');

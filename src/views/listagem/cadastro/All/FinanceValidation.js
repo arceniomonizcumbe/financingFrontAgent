@@ -82,77 +82,73 @@ const renderPreview = (fileUrl) =>
         </div>
       );
 
-useEffect(() => {
-      const fetchClientData = async () => {
-        try {
-          let responsew
-          responsew = await ListClient()
-          
-          const clientsArray = Array.isArray(responsew) ? responsew : Object.values(responsew || {})
-          setClientsCompare(clientsArray)
-          let response
-          if (id) {
-            response = await ClientList(id)
-            console.log("id:",response)
-            
-            if (response ) {
-              const data = response
-              setLoanData(data)
-              setFormData({
-
-                name: data.name || '',
-               // employerAddress:data.employerAddress || '',
-                creditType: data.creditType ||'',
-                creditPurpose: data.creditPurpose ||'',
-                amountInWords: data.amountInWords ||'',
-                clientName: data.clientName ||'',
-                clientSignature: data.clientSignature ||'',
-                submissionDate: data.submissionDate ||'',
-                sellerSignature: data.sellerSignature ||'',
-                sellerSignatureDate: data.sellerSignatureDate ||'',
-                managerSignatureDate: data.managerSignatureDate ||'',
-                data: data.managerSignatureDate ||'',
-                loanAmount:  data.loanAmount ||'',
-                loanType:data.loanType ||'',
-                address: data.address || '',
-                salary: data.salary || '',
-                company: data.company || '',
-                waysOfVAlueReceipt:data.waysOfVAlueReceipt|| '',
-                bankName: data.bankName || '',
-                nib: data.nib || '',
-                wallet: data.wallet || '',
-                bankNumber: data.bankNumber|| '',
-                docManagerSignaturePath: data.docManagerSignaturePath 
-                ? `http://localhost:8081/uploads/${data.docManagerSignaturePath}` 
-                : '',
-                signatureFilePath: data.signatureFilePath 
-                ? `http://localhost:8081/uploads/${data.signatureFilePath}` 
-                : '',
-                docSellerSignaturePath: data.docSellerSignaturePath
-                ? `http://localhost:8081/uploads/${data.docSellerSignaturePath}`
-                :'',
-                residenceProofFilePath: data.residenceProofFilePath
-                ? `http://localhost:8081/uploads/${data.residenceProofFilePath}`
-                :'',
-              })
-            } else {
-              console.warn('No data found for the provided ID.')
+      useEffect(() => {
+        const fetchClientData = async () => {
+          try {
+            let responsew = await ListClient();
+            const clientsArray = Array.isArray(responsew) ? responsew : Object.values(responsew || {});
+            setClientsCompare(clientsArray);
+      
+            if (id) {
+              let response = await ClientList(id);
+              console.log("id:", response);
+      
+              if (response) {
+                const data = response;
+                setLoanData(data);
+      
+                // Verifica se o estado não é "Declined" antes de definir as imagens
+                const shouldShowImages = data.state !== "DECLINED";
+      
+                setFormData({
+                  name: data.name || '',
+                  creditType: data.creditType || '',
+                  creditPurpose: data.creditPurpose || '',
+                  amountInWords: data.amountInWords || '',
+                  clientName: data.clientName || '',
+                  clientSignature: data.clientSignature || '',
+                  submissionDate: data.submissionDate || '',
+                  sellerSignature: data.sellerSignature || '',
+                  sellerSignatureDate: data.sellerSignatureDate || '',
+                  managerSignatureDate: data.managerSignatureDate || '',
+                  data: data.managerSignatureDate || '',
+                  loanAmount: data.loanAmount || '',
+                  loanType: data.loanType || '',
+                  address: data.address || '',
+                  salary: data.salary || '',
+                  company: data.company || '',
+                  waysOfVAlueReceipt: data.waysOfVAlueReceipt || '',
+                  bankName: data.bankName || '',
+                  nib: data.nib || '',
+                  wallet: data.wallet || '',
+                  bankNumber: data.bankNumber || '',
+                  
+                  // Se o estado for "Declined", os caminhos das imagens serão strings vazias
+                  docManagerSignaturePath: shouldShowImages && data.docManagerSignaturePath
+                    ? `http://localhost:8081/uploads/${data.docManagerSignaturePath}`
+                    : '',
+                  signatureFilePath: shouldShowImages && data.signatureFilePath
+                    ? `http://localhost:8081/uploads/${data.signatureFilePath}`
+                    : '',
+                  docSellerSignaturePath: shouldShowImages && data.docSellerSignaturePath
+                    ? `http://localhost:8081/uploads/${data.docSellerSignaturePath}`
+                    : '',
+                  residenceProofFilePath: shouldShowImages && data.residenceProofFilePath
+                    ? `http://localhost:8081/uploads/${data.residenceProofFilePath}`
+                    : '',
+                });
+              } else {
+                console.warn('No data found for the provided ID.');
+              }
             }
-          } else {
-            // response = await ListClient(); // Fetching all clients
-            // console.log("Response without ID:", response);
-            // const clientsArray = Array.isArray(response) ? response : Object.values(response || {});
-            // setClients(clientsArray);
-            // console.log("Converted clients array:", clientsArray);
+          } catch (error) {
+            console.error('Erro ao buscar dados do cliente:', error);
           }
-        } catch (error) {
-          console.error('Erro ao buscar dados do cliente:', error)
-        }
-      }
-      fetchClientData()
-
-    }, [id])
-
+        };
+      
+        fetchClientData();
+      }, [id]);
+      
   // Form submit handler
   const handleFormSubmit = (event) => {
     event.preventDefault(); // Prevent form submission

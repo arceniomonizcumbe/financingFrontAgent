@@ -360,7 +360,7 @@ const ClientValidation = ({ value, onChange }) => {
               let responsew = await ListClient();
               const clientsArray = Array.isArray(responsew) ? responsew : Object.values(responsew || {});
               setClientsCompare(clientsArray);
-              
+  
               if (id) {
                   let response = await ClientList(id);
   
@@ -368,83 +368,92 @@ const ClientValidation = ({ value, onChange }) => {
                       const data = response;
                       console.log(data);
   
-                      // Função para verificar se a imagem existe na porta 8081, caso contrário, usar 8080
-                      const getFilePath = async (fileName) => {
-                          if (!fileName) return ''; // Retorna vazio se não houver nome de arquivo
-                          
-                          const url8081 = `http://localhost:8081/uploads/${fileName}`;
-                          const url8080 = `http://localhost:8080/uploads/${fileName}`;
+                      let salaryFilePath = "";
+                      let residenceProofFilePath = "";
+                      let biFilePath = "";
+                      let nuitFilePath = "";
+                      let signatureFilePath = "";
   
-                          try {
-                              const res = await fetch(url8081, { method: 'HEAD' });
-                              if (res.ok) return url8081;
-                          } catch (error) {
-                              console.warn(`Arquivo não encontrado na porta 8081: ${fileName}, tentando 8080...`);
-                          }
-                          
-                          return url8080; // Retorna a URL na porta 8080 se a 8081 falhar
-                      };
+                      if (data.state !== "DECLINED") {
+                          // Função para verificar se a imagem existe na porta 8081, caso contrário, usar 8080
+                          const getFilePath = async (fileName) => {
+                              if (!fileName) return ""; // Retorna vazio se não houver nome de arquivo
   
-                      // Buscar caminhos das imagens de forma assíncrona
-                      const salaryFilePath = await getFilePath(data.salaryFilePath);
-                      const residenceProofFilePath = await getFilePath(data.residenceProofFilePath);
-                      const biFilePath = await getFilePath(data.biFilePath);
-                      const nuitFilePath = await getFilePath(data.nuitFilePath);
-                      const signatureFilePath = await getFilePath(data.signatureFilePath);
+                              const url8081 = `http://localhost:8081/uploads/${fileName}`;
+                              const url8080 = `http://localhost:8080/uploads/${fileName}`;
+  
+                              try {
+                                  const res = await fetch(url8081, { method: "HEAD" });
+                                  if (res.ok) return url8081;
+                              } catch (error) {
+                                  console.warn(`Arquivo não encontrado na porta 8081: ${fileName}, tentando 8080...`);
+                              }
+  
+                              return url8080; // Retorna a URL na porta 8080 se a 8081 falhar
+                          };
+  
+                          // Buscar caminhos das imagens apenas se o estado não for "Declined"
+                          salaryFilePath = await getFilePath(data.salaryFilePath);
+                          residenceProofFilePath = await getFilePath(data.residenceProofFilePath);
+                          biFilePath = await getFilePath(data.biFilePath);
+                          nuitFilePath = await getFilePath(data.nuitFilePath);
+                          signatureFilePath = await getFilePath(data.signatureFilePath);
+                      }
   
                       setClientData(data);
                       setFormData({
-                          name: data.name || '',
-                          birthDate: data.birthDate ? data.birthDate.split('T')[0] : '',
-                          id_Number: data.id_Number || '',
-                          nationality: data.nationality || '',
-                          naturality: data.naturality || '',
-                          issueDate: data.issueDate ? data.issueDate.split('T')[0] : '',
-                          validationDate: data.validationDate ? data.validationDate.split('T')[0] : '',
-                          mother_name: data.mother_name || '',
-                          father_name: data.father_name || '',
-                          address: data.address || '',
-                          city: data.city || '',
-                          contractType: data.contractType || '',
-                          employerFisicalAddress: data.employerFisicalAddress || '',
-                          nuit: data.nuit || '',
-                          documentType: data.documentType || '',
-                          classification: data.classification || '',
-                          marital_status: data.marital_status || '',
-                          gender: data.gender || '',
-                          pep: data.pep || '',
-                          resident: data.resident || '',
-                          qualifications: data.qualifications || '',
-                          profession: data.profession || '',
-                          employer: data.employer || '',
-                          salary: data.salary || '',
-                          contact: data.contact || '',
-                          email: data.email || '',
-                          contactPersonName: data.contactPersonName || '',
-                          contactPersonPhone: data.contactPersonPhone || '',
+                          name: data.name || "",
+                          birthDate: data.birthDate ? data.birthDate.split("T")[0] : "",
+                          id_Number: data.id_Number || "",
+                          nationality: data.nationality || "",
+                          naturality: data.naturality || "",
+                          issueDate: data.issueDate ? data.issueDate.split("T")[0] : "",
+                          validationDate: data.validationDate ? data.validationDate.split("T")[0] : "",
+                          mother_name: data.mother_name || "",
+                          father_name: data.father_name || "",
+                          address: data.address || "",
+                          company_ID: data.company_ID || "",
+                          city: data.city || "",
+                          contractType: data.contractType || "",
+                          employerFisicalAddress: data.employerFisicalAddress || "",
+                          nuit: data.nuit || "",
+                          documentType: data.documentType || "",
+                          classification: data.classification || "",
+                          marital_status: data.marital_status || "",
+                          gender: data.gender || "",
+                          pep: data.pep || "",
+                          resident: data.resident || "",
+                          qualifications: data.qualifications || "",
+                          profession: data.profession || "",
+                          employer: data.employer || "",
+                          salary: data.salary || "",
+                          contact: data.contact || "",
+                          email: data.email || "",
+                          contactPersonName: data.contactPersonName || "",
+                          contactPersonPhone: data.contactPersonPhone || "",
                           terms: data.terms || false,
-                          state: isAdmin ? formData.state || '' : 'PENDING',
-                          inputter: data.inputter || '',
-                          authorizer: data.authorizer || '',
-                          user: data.user || '',
-                          issueCountry: data.issueCountry || '',
-                          company: data.company || '',
-                          docNUITFile: data.docNUITFile || '',
-                          docResidenceProofFile: data.docResidenceProofFile || '',
-                          formattedId: data.formattedId || '',
-                          local: data.local || '',
-                          clientSignature: data.clientSignature || '',
-                          country: data.country || '',
-                          province: data.province || '',
-                          degreeOfKinship: data.degreeOfKinship || '',
-                          floor: data.floor || '',
-                          id: data.id || '',
-                          politic: data.politic || '',
-                          politicPosition: data.politicPosition || '',
-                          familyPolitic: data.familyPolitic || '',
-                          familyPoliticPosition: data.familyPoliticPosition || '',
-                          businessPolitic: data.businessPolitic || '',
-                          businessRelation: data.businessRelation || '',
+                          state: isAdmin ? formData.state || "" : "PENDING",
+                          inputter: data.inputter || "",
+                          authorizer: data.authorizer || "",
+                          user: data.user || "",
+                          issueCountry: data.issueCountry || "",
+                          company: data.company || "",
+                          docNUITFile: data.docNUITFile || "",
+                          docResidenceProofFile: data.docResidenceProofFile || "",
+                          formattedId: data.formattedId || "",
+                          local: data.local || "",
+                          clientSignature: data.clientSignature || "",
+                          country: data.country || "",
+                          province: data.province || "",
+                          degreeOfKinship: data.degreeOfKinship || "",
+                          floor: data.floor || "",
+                          id: data.id || "",
+                          politic: data.politic || "",
+                          politicPosition: data.politicPosition || "",
+                          familyPolitic: data.familyPolitic || "",
+                          familyPoliticPosition: data.familyPoliticPosition || "",
+                          businessPolitic: data.businessPolitic || "",
+                          businessRelation: data.businessRelation || "",
                           salaryFilePath,
                           residenceProofFilePath,
                           biFilePath,
@@ -454,11 +463,11 @@ const ClientValidation = ({ value, onChange }) => {
   
                       console.log("Arquivo PDF gerado:", residenceProofFilePath);
                   } else {
-                      console.warn('Nenhum dado encontrado para o ID fornecido.');
+                      console.warn("Nenhum dado encontrado para o ID fornecido.");
                   }
               }
           } catch (error) {
-              console.error('Erro ao buscar dados do cliente:', error);
+              console.error("Erro ao buscar dados do cliente:", error);
           }
       };
   
@@ -479,7 +488,14 @@ const ClientValidation = ({ value, onChange }) => {
       const { name, type, checked, files, value } = e.target;
     
       let newValue;
+      if (name === "company_ID") {
+        const selectedCompany = listaCompany.find((company) => company.id.toString() === value);
     
+        setFormData((prevData) => ({
+          ...prevData,
+          company: selectedCompany || null, // Garante que company seja atualizado corretamente
+        }));
+      }
       if (type === "file") {
         const file = files[0] || null;
         newValue = file;
@@ -672,7 +688,8 @@ const ClientValidation = ({ value, onChange }) => {
         )}
    */}
         <CCol md={4}>
-          <CFormLabel htmlFor="name">Nome Completo <span style={{ color: 'red' }}>*</span></CFormLabel>
+          <CFormLabel htmlFor="name">Nome Completo <span style={{ color: 'red' }} autoComplete="off" spellCheck={false}
+          >*</span></CFormLabel>
           <CFormInput
             type="text"
             id="name"
@@ -1167,20 +1184,44 @@ DADOS PROFISSIONAIS
           </CFormSelect>
           <CFormFeedback invalid>Por favor, selecione um campo válido.</CFormFeedback>
         </CCol>
-        <CCol md={4}>
-          <CFormLabel htmlFor="clientEmcompanyployer">Entidade<span style={{ color: 'red' }}>*</span></CFormLabel>
-          <CFormInput
-            type="text"
-            id="company"
-            name="company"
-            value={formData.company}
-            onChange={handleChange}
-            disabled={isAdmin}
-            required
-          />
-          <CFormFeedback invalid>Por favor, forneça um nome de empregador válido.</CFormFeedback>
-        </CCol>
-        {/*ALGO NOVO */}
+                      <CCol md={4}>
+                <CFormLabel htmlFor="clientEmcompanyployer">Entidade<span style={{ color: 'red' }}>*</span></CFormLabel>
+                <CFormInput
+                  type="text"
+                  id="company"
+                  name="company"
+                  value={formData.company}
+                  onChange={handleChange}
+                  disabled={isAdmin}
+                  required
+                />
+                <CFormFeedback invalid>Por favor, forneça um nome de empregador válido.</CFormFeedback>
+              </CCol>
+{/*
+<CCol md={4} className="mb-3">
+  <CFormLabel htmlFor="company">Entidade</CFormLabel>
+  <CFormSelect
+    id="company"
+    name="company_ID"
+    value={formData.company?.id || ''}
+    onChange={handleChange}
+    disabled={isAdmin}
+    required
+  >
+    <option value="" disabled>
+      Selecione uma entidade
+    </option>
+    {Array.isArray(listaCompany) &&
+      listaCompany.map((company) => (
+        <option key={company.id} value={company.id}>
+          {company.name}
+        </option>
+      ))}
+  </CFormSelect>
+  <CFormFeedback invalid>Por favor, selecione uma entidade válida.</CFormFeedback>
+</CCol>
+
+*/}
            {/* Section Title */}
            <hr style={{ border: '1px solid #FCAF2E', margin: '20px 0' }} />
            <h4          style={{

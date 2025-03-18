@@ -59,9 +59,7 @@ export const createClient = async (cliente) => {
   delete clientData.docSellerSignatureFilePath
   delete clientData.docManagerSignatureFilePath
   delete clientData.Wallet
-
-
-
+  delete clientData.company
 
   // Adicionar os dados do cliente em formato JSON
   formData.append('clientData', JSON.stringify(clientData));
@@ -125,8 +123,11 @@ export const createClient = async (cliente) => {
 
 export const editClient = async (id, sharedData, name) => {
   const API_URL = 'http://localhost:8081/externalclient'
-
-  const response = await axios.put(`${API_URL}/${id}`, sharedData
+  const cleanData = { ...sharedData };
+  if (cleanData.wallet === "") {
+    delete cleanData.wallet;
+  }
+  const response = await axios.put(`${API_URL}/${id}`, cleanData
   //   , {
   //   // params: { performedBy: name },
   // }
@@ -394,11 +395,12 @@ export const companyList = async () => {
   return response
 }
 export const companyApprovedList = async () => {
-  const API_URL = 'http://localhost:8081/company/approved'
+  const API_URL = 'http://localhost:8081/internal'
   const response = await axios.get(`${API_URL}`)
   console.log(response)
   return response
 }
+
 export const companyPendingList = async () => {
   const API_URL = 'http://localhost:8081/company/pending'
   const response = await axios.get(`${API_URL}`)
