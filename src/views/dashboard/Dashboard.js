@@ -2,15 +2,17 @@ import React, { useState, useEffect,useRef  } from 'react'
 import { CCol, CRow, CWidgetStatsC } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPeople, cilDollar } from '@coreui/icons'
-import { ListClient, LoanList, paymentList, companyList } from '../../axios_api/clientService'
+import { ListClient, LoanList, paymentList, companyList,getExternClientsByUserId  } from '../../axios_api/clientService'
 import { CChart } from '@coreui/react-chartjs'
 import { getStyle } from '@coreui/utils'
+import { useAuth } from '../../AuthContext'
 
 const Dashboard = () => {
   const [clients, setClients] = useState([])
   const [loans, setLoans] = useState([])
   const [payments, setPayments] = useState([])
   const [company, setCompany] = useState([])
+  const {user} = useAuth()
   const chartRef = useRef(null)
   useEffect(() => {
     const handleColorSchemeChange = () => {
@@ -119,25 +121,11 @@ const Dashboard = () => {
   }
 
   useEffect(() => {
-    fetchData(ListClient, setClients, 'clients')
-    //fetchData(paymentList, setPayments, 'payments')
-  //  fetchData(companyList, (data) => setCompany(data.data || []), 'company')
-
-    // const fetchLoans = async () => {
-    //   try {
-    //     const data = await LoanList()
-    //     if (Array.isArray(data)) {
-    //       setLoans(data)
-    //     } else {
-    //       console.error('Invalid loans data:', data)
-    //     }
-    //   } catch (error) {
-    //     console.error('Error fetching loans:', error)
-    //   }
-    // }
-
-    // fetchLoans()
-  }, [])
+    if (!user?.id) return // Prevent execution if user.id is missing
+  
+    fetchData(() => getExternClientsByUserId(user.id), setClients, 'clients') 
+  }, [user?.id]) // Depend on user.id, not function
+  
 
   const totalClients = clients.length
   const totalLoans = loans.length

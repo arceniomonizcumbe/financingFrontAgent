@@ -25,13 +25,15 @@ import SignatureCanvas from 'react-signature-canvas'
 import {
   ClientList,
   ListClient,
+  companyApprovedList 
 
 } from '../../../../axios_api/clientService'
 const FinanceValidation = ({ value, onChange }) => {
   const [validated, setValidated] = useState(false);
-    const [loanData, setLoanData] = useState({})
-    const { id } = useParams()
-const [clientCompare, setClientsCompare] = useState({})
+  const [loanData, setLoanData] = useState({})
+  const [listaCompany, setListaCompany] = useState([])
+  const { id } = useParams()
+  const [clientCompare, setClientsCompare] = useState({})
   const [formData, setFormData] = useState({
    // employerAddress: '',
     creditType: '',
@@ -50,8 +52,9 @@ const [clientCompare, setClientsCompare] = useState({})
     company:   '',
     waysOfVAlueReceipt:  '',
     docManagerSignatureFile: '',
+    docNibFile:'',
     docClientSignatureFile:'',
-  });
+  },value);
   // const sigCanvas = useRef(null)
   const sellerSigCanvas = useRef(null)
   const clientSigCanvas = useRef(null)
@@ -81,14 +84,18 @@ const renderPreview = (fileUrl) =>
           </Worker>
         </div>
       );
-
       useEffect(() => {
         const fetchClientData = async () => {
           try {
             let responsew = await ListClient();
             const clientsArray = Array.isArray(responsew) ? responsew : Object.values(responsew || {});
             setClientsCompare(clientsArray);
+            const response = await companyApprovedList()
       
+              if (response) {
+                setListaCompany(response.data)
+              }
+            
             if (id) {
               let response = await ClientList(id);
               console.log("id:", response);
@@ -100,7 +107,7 @@ const renderPreview = (fileUrl) =>
                 // Verifica se o estado não é "Declined" antes de definir as imagens
                 const shouldShowImages = data.state !== "DECLINED";
       
-                setFormData({
+                const updatedData = {
                   name: data.name || '',
                   creditType: data.creditType || '',
                   creditPurpose: data.creditPurpose || '',
@@ -122,21 +129,43 @@ const renderPreview = (fileUrl) =>
                   nib: data.nib || '',
                   wallet: data.wallet || '',
                   bankNumber: data.bankNumber || '',
-                  
                   // Se o estado for "Declined", os caminhos das imagens serão strings vazias
                   docManagerSignaturePath: shouldShowImages && data.docManagerSignaturePath
-                    ? `http://localhost:8081/uploads/${data.docManagerSignaturePath}`
+                    ? `http://192.168.2.125:8081/uploads/${data.docManagerSignaturePath}`
                     : '',
                   signatureFilePath: shouldShowImages && data.signatureFilePath
-                    ? `http://localhost:8081/uploads/${data.signatureFilePath}`
+                    ? `http://192.168.2.125:8081/uploads/${data.signatureFilePath}`
                     : '',
                   docSellerSignaturePath: shouldShowImages && data.docSellerSignaturePath
-                    ? `http://localhost:8081/uploads/${data.docSellerSignaturePath}`
+                    ? `http://192.168.2.125:8081/uploads/${data.docSellerSignaturePath}`
                     : '',
                   residenceProofFilePath: shouldShowImages && data.residenceProofFilePath
-                    ? `http://localhost:8081/uploads/${data.residenceProofFilePath}`
+                    ? `http://192.168.2.125:8081/uploads/${data.residenceProofFilePath}`
                     : '',
-                });
+
+
+                  
+                    docTermsAndConditionsFilePath: shouldShowImages && data.docTermsAndConditionsFilePath
+                    ? `http://192.168.2.125:8081/uploads/${data.docTermsAndConditionsFilePath}`
+                    : '',
+                    docTechnicalSheetFilePath: shouldShowImages && data.docTechnicalSheetFilePath
+                    ? `http://192.168.2.125:8081/uploads/${data.docTechnicalSheetFilePath}`
+                    : '',
+                    docNibFilePath: shouldShowImages && data.docNibFilePath
+                    ? `http://192.168.2.125:8081/uploads/${data.docNibFilePath}`
+                    : '',
+                 
+                    docCreditApplicationFormFilePath: shouldShowImages && data.docCreditApplicationFormFilePath
+                    ? `http://192.168.2.125:8081/uploads/${data.docCreditApplicationFormFilePath}`
+                    : '',
+                    docCreditInsuranceFormFilePath: shouldShowImages && data.docCreditInsuranceFormFilePath
+                    ? `http://192.168.2.125:8081/uploads/${data.docCreditInsuranceFormFilePath}`
+                    : '',
+                };
+      
+                setFormData(updatedData);
+                onChange(data); // Aqui chamamos o `onChange` para atualizar o componente pai
+                console.log('--',data)
               } else {
                 console.warn('No data found for the provided ID.');
               }
@@ -148,7 +177,7 @@ const renderPreview = (fileUrl) =>
       
         fetchClientData();
       }, [id]);
-      
+    
   // Form submit handler
   const handleFormSubmit = (event) => {
     event.preventDefault(); // Prevent form submission
@@ -197,16 +226,13 @@ const renderPreview = (fileUrl) =>
   const handleSignatureChange = (signatureType) => {
     const canvasRef = signatureType === "seller" ? sellerSigCanvas : clientSigCanvas;
   
-    // Verifica se o ref está pronto e se o canvas não está vazio
     if (!canvasRef.current || canvasRef.current.isEmpty()) {
       toast.warn("Por favor, assine antes de salvar.");
       return;
     }
   
-    // Converte a assinatura para uma URL de dados
     const signatureDataUrl = canvasRef.current.toDataURL("image/png");
   
-    // Converte a URL de dados em um arquivo Blob
     fetch(signatureDataUrl)
       .then((res) => res.blob())
       .then((blob) => {
@@ -215,11 +241,15 @@ const renderPreview = (fileUrl) =>
           lastModified: new Date().getTime(),
         });
   
-        // Atualiza o estado do formulário com o arquivo de assinatura
-        setFormData((prev) => ({
-          ...prev,
-          [signatureType === "seller" ? "docSellerSignatureFile" : "docClientSignatureFile"]: file,
-        }));
+        setFormData((prev) => {
+          const updatedData = {
+            ...prev,
+            [signatureType === "seller" ? "docSellerSignatureFile" : "docClientSignatureFile"]: file,
+          };
+  
+          onChange(updatedData); // Atualiza no componente pai
+          return updatedData;
+        });
   
         toast.success("Assinatura salva com sucesso!");
       })
@@ -228,38 +258,53 @@ const renderPreview = (fileUrl) =>
         toast.error("Erro ao salvar assinatura.");
       });
   };
+  
+  // Monitorar mudanças no formData
+  useEffect(() => {
+    console.log("Atualização no formData:", formData);
+  }, [formData]);
+  
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
-    let newValue;
 
-    if (type === "file") {
-      const file = files[0] || null;
-      newValue = file;
-  
-      // Generate the file preview URL
-      if (file) {
-        const fileUrl = URL.createObjectURL(file);
-        const filePathKey = name.replace(/File$/, "FilePath"); // Ensure consistent naming
-  
-        setFormData((prevData) => ({
-          ...prevData,
-          [filePathKey]: fileUrl,
-        }));
-      }
-    }
-    else {
-      newValue = type === "checkbox" ? checked : value;
-    }
-  
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: newValue,
-    }));
-  
-    // Update the data in `onChange`, if necessary
-    const updatedData = { ...formData, [name]: newValue };
-    onChange(updatedData);
-  };
+    setFormData((prevData) => {
+        let updatedData = { ...prevData };
+
+        if (name === "company") {
+            updatedData = {
+                ...updatedData,
+                company: { id: value },
+            };
+        } else if (type === "file") {
+            const file = files?.[0] || null;
+
+            if (file) {
+                try {
+                    const fileUrl = URL.createObjectURL(file);
+                    const filePathKey = name.replace(/File$/, "FilePath");
+
+                    updatedData = {
+                        ...updatedData,
+                        [filePathKey]: fileUrl,
+                        [name]: file
+                    };
+                } catch (error) {
+                    console.error("Erro ao criar URL do arquivo:", error);
+                }
+            } else {
+                updatedData = { ...updatedData, [name]: null };
+            }
+        } else {
+            const newValue = type === "checkbox" ? checked : value;
+            updatedData = { ...updatedData, [name]: newValue };
+        }
+
+        onChange(updatedData);
+        return updatedData;
+    });
+};
+
+
 
   return (
     <CRow>
@@ -270,17 +315,44 @@ const renderPreview = (fileUrl) =>
               noValidate
               validated={validated}
             >
+
+            
                             <h4 className="text-warning">Dados do Empregador</h4>
-              <CRow>
-                <CCol md={6} className="mb-3">
-                  <CFormLabel htmlFor="company">Nome da Entidade</CFormLabel>
-                  <CFormInput type="text" id="company" name="company" value={formData.company} onChange={handleChange} required />
-                </CCol>
-                <CCol md={6} className="mb-3">
-                  <CFormLabel htmlFor="address">Endereço</CFormLabel>
-                  <CFormInput type="text" id="address" name="address" value={formData.address} onChange={handleChange} required />
-                </CCol>
-              </CRow>
+                            <CRow>
+  <CCol md={6} className="mb-3">
+    <CFormLabel htmlFor="company">Entidade</CFormLabel>
+    <CFormSelect
+      id="company"
+      name="company"
+      value={formData.company?.id || ""}
+      onChange={handleChange}
+      required
+    >
+      <option value="" disabled>
+        Selecione uma entidade
+      </option>
+      {Array.isArray(listaCompany) &&
+        listaCompany.map((company, index) => (
+          <option key={index} value={company.id}>
+            {company.name}
+          </option>
+        ))}
+    </CFormSelect>
+  </CCol>
+
+  <CCol md={6} className="mb-3">
+    <CFormLabel htmlFor="address">Endereço</CFormLabel>
+    <CFormInput
+      type="text"
+      id="address"
+      name="address"
+      value={formData.address || ""}
+      onChange={handleChange}
+    />
+  </CCol>
+</CRow>
+
+
               <h4 className="text-warning">Condições Específicas de Crédito</h4>
               <CRow>
                 <CCol md={2} className="mb-3">
@@ -432,7 +504,7 @@ que me foram apresentados”.
           
                    
              <CCol md={6}>
-  <CFormLabel htmlFor="clientSignature" className="fw-bold">
+  <CFormLabel htmlFor="clientSignature">
     ASSINATURA DO CLIENTE:
   </CFormLabel>
 
@@ -485,7 +557,7 @@ que me foram apresentados”.
  required /> */}
               </CCol>
 <CCol md={6}>
-  <CFormLabel htmlFor="sellerSignature" className="fw-bold">
+  <CFormLabel htmlFor="sellerSignature" >
     ASSINATURA DO VENDEDOR:
   </CFormLabel>
 
@@ -533,9 +605,11 @@ que me foram apresentados”.
               <CFormInput type="date" id="sellerSignatureDate" name="sellerSignatureDate" value={formData.sellerSignatureDate || new Date().toISOString().split('T')[0]} onChange={handleChange} required />
               </CCol>
              </CRow>
-             <CRow>
-             
-             <CCol md={10} >
+
+             <h4 className="text-warning">Documentos necessários</h4>
+
+             <CRow className="mt-3">
+             <CCol md={6} >
                <div className="mb-3">
                  <CFormLabel htmlFor="docManagerSignatureFile">
                  Assinatura do Gestor e Carimbo do Banco<span style={{ color: "red" }}>*</span>
@@ -556,13 +630,116 @@ que me foram apresentados”.
                  ? renderPreview(formData.docManagerSignaturePath)
                  : null}
                  
-             </CCol>
-              <CCol md={2} className="mb-3">
+             </CCol> <CCol md={6}>
+   <div className="mb-3">
+     <CFormLabel htmlFor="docTermsAndConditionsFile">
+       Termos e condições <span style={{ color: 'red' }}>*</span>
+     </CFormLabel>
+     <CFormInput
+       type="file"
+       id="docTermsAndConditionsFile"
+       name="docTermsAndConditionsFile"
+       onChange={(e) => handleChange(e)}
+       accept=".pdf"
+       required={!formData.docTermsAndConditionsFilePath}
+     />
+     <small className="form-text text-muted">Somente arquivos em PDF.</small>
+   </div>
+   {formData.docTermsAndConditionsFile
+     ? renderPreview(URL.createObjectURL(formData.docTermsAndConditionsFile))
+     : formData.docTermsAndConditionsFilePath
+       ? renderPreview(formData.docTermsAndConditionsFilePath)
+       : null}
+ </CCol>
+ <CCol md={6}>
+   <div className="mb-3">
+     <CFormLabel htmlFor="docTechnicalSheetFile">
+       Ficha técnica <span style={{ color: 'red' }}>*</span>
+     </CFormLabel>
+     <CFormInput
+       type="file"
+       id="docTechnicalSheetFile"
+       name="docTechnicalSheetFile"
+       onChange={(e) => handleChange(e)}
+       accept=".pdf"
+       required={!formData.docTechnicalSheetFilePath}
+     />
+     <small className="form-text text-muted">Somente arquivos em PDF.</small>
+   </div>
+   {formData.docTechnicalSheetFile
+     ? renderPreview(URL.createObjectURL(formData.docTechnicalSheetFile))
+     : formData.docTechnicalSheetFilePath
+       ? renderPreview(formData.docTechnicalSheetFilePath)
+       : null}
+ </CCol>
+ <CCol md={6}>
+   <div className="mb-3">
+     <CFormLabel htmlFor="docNibFile">
+       NIB <span style={{ color: 'red' }}>*</span>
+     </CFormLabel>
+     <CFormInput
+       type="file"
+       id="docNibFile"
+       name="docNibFile"
+       onChange={(e) => handleChange(e)}
+       accept=".pdf"
+       required={!formData.docNibFilePath}
+     />
+     <small className="form-text text-muted">Somente arquivos em PDF.</small>
+   </div>
+   {formData.docNibFile
+     ? renderPreview(URL.createObjectURL(formData.docNibFile))
+     : formData.docNibFilePath
+       ? renderPreview(formData.docNibFilePath)
+       : null}
+ </CCol>
+ <CCol md={6}>
+   <div className="mb-3">
+     <CFormLabel htmlFor="docCreditApplicationFormFile">
+       Formulário de solicitação de crédito <span style={{ color: 'red' }}>*</span>
+     </CFormLabel>
+     <CFormInput
+       type="file"
+       id="docCreditApplicationFormFile"
+       name="docCreditApplicationFormFile"
+       onChange={(e) => handleChange(e)}
+       accept=".pdf"
+       required={!formData.docCreditApplicationFormFilePath}
+     />
+     <small className="form-text text-muted">Somente arquivos em PDF.</small>
+   </div>
+   {formData.docCreditApplicationFormFile
+     ? renderPreview(URL.createObjectURL(formData.docCreditApplicationFormFile))
+     : formData.docCreditApplicationFormFilePath
+       ? renderPreview(formData.docCreditApplicationFormFilePath)
+       : null}
+ </CCol>
+ <CCol md={6}>
+   <div className="mb-3">
+     <CFormLabel htmlFor="docCreditInsuranceFormFile">
+       Formulário de seguro de crédito <span style={{ color: 'red' }}>*</span>
+     </CFormLabel>
+     <CFormInput
+       type="file"
+       id="docCreditInsuranceFormFile"
+       name="docCreditInsuranceFormFile"
+       onChange={(e) => handleChange(e)}
+       accept=".pdf"
+       required={!formData.docCreditInsuranceFormFilePath}
+     />
+     <small className="form-text text-muted">Somente arquivos em PDF.</small>
+   </div>
+   {formData.docCreditInsuranceFormFile
+     ? renderPreview(URL.createObjectURL(formData.docCreditInsuranceFormFile))
+     : formData.docCreditInsuranceFormFilePath
+       ? renderPreview(formData.docCreditInsuranceFormFilePath)
+       : null}
+ </CCol>
+             </CRow>
+             <CCol md={2} className="mb-3">
               <CFormLabel htmlFor="managerSignatureDate">Data</CFormLabel>
               <CFormInput type="date" id="managerSignatureDate" name="managerSignatureDate" value={formData.managerSignatureDate || new Date().toISOString().split('T')[0]} onChange={handleChange} required />
               </CCol>
-             </CRow>
-              
             </CForm>
       </CCol>
     </CRow>

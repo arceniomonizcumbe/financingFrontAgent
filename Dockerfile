@@ -22,8 +22,8 @@ FROM nginx:alpine
 # Copy built React app to Nginx's serving directory
 COPY --from=build /app/build /usr/share/nginx/html
 
-# Expose port 80 for serving the app
-EXPOSE 80
+# Expose port 3001 for serving the app
+EXPOSE 3001
 
 # Start Nginx
 CMD ["nginx", "-g", "daemon off;"]

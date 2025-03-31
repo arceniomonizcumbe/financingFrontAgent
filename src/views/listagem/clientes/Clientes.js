@@ -32,6 +32,7 @@ import CIcon from '@coreui/icons-react'
 import {
   getPendingClient,
   ListClient,
+  getExternClientsByUserId,
   deleteClient,
   getLogByEntityIDName,
   getClientSituation
@@ -67,13 +68,15 @@ const Tables = () => {
   }
   useEffect(() => {
     const fetchClientes = async () => {
+      if (!user?.id) return // Prevents execution if user is undefined or id is missing
+  
       try {
-        const data = user?.role === 'ADMIN' ? await getPendingClient() : await ListClient()
+                //const data = user?.role === 'ADMIN' ? await getPendingClient() : await ListClient()
 
-        // const data = await clientsList()
+        const data = await getExternClientsByUserId(user.id) // Use user.id correctly
+  
         if (Array.isArray(data)) {
           setClientes(data)
-          console.log('Os dados recebidos não são um array:', data)
         } else {
           console.error('Os dados recebidos não são um array:', data)
         }
@@ -81,10 +84,10 @@ const Tables = () => {
         console.error('Erro ao buscar clientes:', error)
       }
     }
-
+  
     fetchClientes()
-  }, [])
-
+  }, [user?.id]) // Add dependency
+  
   useEffect(() => {
     checkLoginUser()
   }, [])

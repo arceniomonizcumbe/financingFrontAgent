@@ -63,8 +63,8 @@ const ClientValidation = ({ value, onChange }) => {
     useEffect(() => {
       if (mockJsonResponse.docSalaryFile) {
         // Simulando um caminho local da pasta pública (public folder)
-        const filePath = `http://localhost:8081/uploads/${mockJsonResponse.docSalaryFile}`;
-        console.log("Caminho do arquivo:", filePath); // Debugging  
+        const filePath = `http://192.168.2.125:8081/uploads/${mockJsonResponse.docSalaryFile}`;
+        // console.log("Caminho do arquivo:", filePath); // Debugging  
               setFilePreview(filePath);
         setFileName(mockJsonResponse.docSalaryFile);
       }
@@ -74,6 +74,7 @@ const ClientValidation = ({ value, onChange }) => {
       birthDate: '',
       id_Number: '',
       // company_ID: '',
+      company: '',
       nationality: '',
       naturality: '',
       issueDate: '',
@@ -186,7 +187,7 @@ const ClientValidation = ({ value, onChange }) => {
     formData.append("file", file); // "file" deve ser o nome do parâmetro esperado no backend
   
     try {
-      const response = await fetch("http://localhost:8080/api/upload", {
+      const response = await fetch("http://192.168.2.125:8080/api/upload", {
         method: "POST",
         body: formData,
       });
@@ -314,22 +315,22 @@ const ClientValidation = ({ value, onChange }) => {
     //             businessRelation: data.businessRelation||'',
     //             name: data.name || '',
     //             salaryFilePath: data.salaryFilePath 
-    //             ? `http://localhost:8081/uploads/${data.salaryFilePath}` : 
+    //             ? `http://192.168.2.125:8081/uploads/${data.salaryFilePath}` : 
     //             salaryFilePath: data.salaryFilePath 
-    //             ? `http://localhost:8080/uploads/${data.salaryFilePath}` 
+    //             ? `http://192.168.2.125:8080/uploads/${data.salaryFilePath}` 
     //             : '',
     //         residenceProofFilePath: data.residenceProofFilePath 
-    //             ? `http://localhost:8081/uploads/${data.residenceProofFilePath}` 
+    //             ? `http://192.168.2.125:8081/uploads/${data.residenceProofFilePath}` 
     //             : '',
     //         biFilePath: data.biFilePath 
-    //             ? `http://localhost:8081/uploads/${data.biFilePath}` 
+    //             ? `http://192.168.2.125:8081/uploads/${data.biFilePath}` 
     //             : '',
     //         nuitFilePath: data.nuitFilePath 
-    //             ? `http://localhost:8081/uploads/${data.nuitFilePath}` 
+    //             ? `http://192.168.2.125:8081/uploads/${data.nuitFilePath}` 
     //             : '',
          
     //             signatureFilePath: data.signatureFilePath 
-    //             ? `http://localhost:8081/uploads/${data.signatureFilePath}` 
+    //             ? `http://192.168.2.125:8081/uploads/${data.signatureFilePath}` 
     //             : '',
             
     //                         })
@@ -363,24 +364,26 @@ const ClientValidation = ({ value, onChange }) => {
   
               if (id) {
                   let response = await ClientList(id);
-  
+                  
                   if (response) {
                       const data = response;
-                      console.log(data);
+                      // console.log(data);
   
                       let salaryFilePath = "";
                       let residenceProofFilePath = "";
                       let biFilePath = "";
                       let nuitFilePath = "";
                       let signatureFilePath = "";
+                      let docClientRegistrationFormFilePath = "";
+                      let docBankStatementFilePath = "";
   
                       if (data.state !== "DECLINED") {
                           // Função para verificar se a imagem existe na porta 8081, caso contrário, usar 8080
                           const getFilePath = async (fileName) => {
                               if (!fileName) return ""; // Retorna vazio se não houver nome de arquivo
   
-                              const url8081 = `http://localhost:8081/uploads/${fileName}`;
-                              const url8080 = `http://localhost:8080/uploads/${fileName}`;
+                              const url8081 = `http://192.168.2.125:8081/uploads/${fileName}`;
+                              const url8080 = `http://192.168.2.125:8080/uploads/${fileName}`;
   
                               try {
                                   const res = await fetch(url8081, { method: "HEAD" });
@@ -391,13 +394,15 @@ const ClientValidation = ({ value, onChange }) => {
   
                               return url8080; // Retorna a URL na porta 8080 se a 8081 falhar
                           };
-  
                           // Buscar caminhos das imagens apenas se o estado não for "Declined"
                           salaryFilePath = await getFilePath(data.salaryFilePath);
                           residenceProofFilePath = await getFilePath(data.residenceProofFilePath);
                           biFilePath = await getFilePath(data.biFilePath);
                           nuitFilePath = await getFilePath(data.nuitFilePath);
                           signatureFilePath = await getFilePath(data.signatureFilePath);
+
+                          docBankStatementFilePath = await getFilePath(data.docBankStatementFilePath);
+                          docClientRegistrationFormFilePath = await getFilePath(data.docClientRegistrationFormFilePath);
                       }
   
                       setClientData(data);
@@ -412,7 +417,7 @@ const ClientValidation = ({ value, onChange }) => {
                           mother_name: data.mother_name || "",
                           father_name: data.father_name || "",
                           address: data.address || "",
-                          company_ID: data.company_ID || "",
+                       //   company_ID: data.company || "",
                           city: data.city || "",
                           contractType: data.contractType || "",
                           employerFisicalAddress: data.employerFisicalAddress || "",
@@ -458,10 +463,11 @@ const ClientValidation = ({ value, onChange }) => {
                           residenceProofFilePath,
                           biFilePath,
                           nuitFilePath,
-                          signatureFilePath
+                          signatureFilePath,
+                          docClientRegistrationFormFilePath,
+                          docBankStatementFilePath
                       });
   
-                      console.log("Arquivo PDF gerado:", residenceProofFilePath);
                   } else {
                       console.warn("Nenhum dado encontrado para o ID fornecido.");
                   }
@@ -486,44 +492,48 @@ const ClientValidation = ({ value, onChange }) => {
     };
     const handleChange = (e) => {
       const { name, type, checked, files, value } = e.target;
-    
-      let newValue;
-      if (name === "company_ID") {
-        const selectedCompany = listaCompany.find((company) => company.id.toString() === value);
-    
-        setFormData((prevData) => ({
-          ...prevData,
-          company: selectedCompany || null, // Garante que company seja atualizado corretamente
-        }));
-      }
-      if (type === "file") {
-        const file = files[0] || null;
-        newValue = file;
-    
-        // Generate the file preview URL
-        if (file) {
-          const fileUrl = URL.createObjectURL(file);
-          const filePathKey = name.replace(/File$/, "FilePath"); // Ensure consistent naming
-    
-          setFormData((prevData) => ({
-            ...prevData,
-            [filePathKey]: fileUrl,
-          }));
-        }
-      } else {
-        newValue = type === "checkbox" ? checked : value;
-      }
-    
-      setFormData((prevData) => ({
-        ...prevData,
-        [name]: newValue,
-      }));
-    
-      // Update the data in `onChange`, if necessary
-      const updatedData = { ...formData, [name]: newValue };
-      onChange(updatedData);
-    };
-    
+  
+      setFormData((prevData) => {
+          let updatedData = { ...prevData };
+  
+          if (name === "company") {
+              updatedData = {
+                  ...updatedData,
+                  company: { id: value },
+              };
+          } else if (type === "file") {
+              const file = files?.[0] || null;
+  
+              if (file) {
+                  try {
+                      const fileUrl = URL.createObjectURL(file);
+                      const filePathKey = name.replace(/File$/, "FilePath");
+  
+                      updatedData = {
+                          ...updatedData,
+                          [filePathKey]: fileUrl,
+                          [name]: file,
+                      };
+                  } catch (error) {
+                      console.error("Erro ao criar URL do arquivo:", error);
+                  }
+              } else {
+                  updatedData = { ...updatedData, [name]: null };
+              }
+          } else {
+              const newValue = type === "checkbox" ? checked : value;
+              updatedData = { ...updatedData, [name]: newValue };
+          }
+  
+          // Sempre atualiza o usuário corretamente
+          updatedData.user = { id: user.id };
+  
+          // Atualiza o estado com os dados modificados
+          onChange(updatedData); // Chama a função de atualização do componente pai
+          return updatedData;
+      });
+  };
+  
 
     
 //     const handleSubmit = async (event) => {
@@ -816,7 +826,7 @@ const ClientValidation = ({ value, onChange }) => {
               const issueDate = new Date(e.target.value)
               if (!isNaN(issueDate)) {
                 const validationDate = new Date(issueDate)
-                validationDate.setFullYear(validationDate.getFullYear() + 5)
+                validationDate.setFullYear(validationDate.getFullYear() + 10)
                 setFormData((prevData) => ({
                   ...prevData,
                   validationDate: validationDate.toISOString().split('T')[0],
@@ -840,7 +850,6 @@ const ClientValidation = ({ value, onChange }) => {
             disabled={isAdmin}
             required
             min={minDateString1}
-            max={maxDateString1}
           />
           <CFormFeedback invalid>Por favor, forneça uma data de validade válida.</CFormFeedback>
         </CCol>
@@ -933,7 +942,7 @@ const ClientValidation = ({ value, onChange }) => {
             type="text"
             id="clientAddress"
             name="address"
-            value={formData.address}
+            value={formData.address || value.address}
             onChange={handleChange}
             disabled={isAdmin}
             required
@@ -1184,47 +1193,50 @@ DADOS PROFISSIONAIS
           </CFormSelect>
           <CFormFeedback invalid>Por favor, selecione um campo válido.</CFormFeedback>
         </CCol>
-                      <CCol md={4}>
-                <CFormLabel htmlFor="clientEmcompanyployer">Entidade<span style={{ color: 'red' }}>*</span></CFormLabel>
-                <CFormInput
-                  type="text"
-                  id="company"
-                  name="company"
-                  value={formData.company}
-                  onChange={handleChange}
-                  disabled={isAdmin}
-                  required
-                />
-                <CFormFeedback invalid>Por favor, forneça um nome de empregador válido.</CFormFeedback>
-              </CCol>
-{/*
-<CCol md={4} className="mb-3">
-  <CFormLabel htmlFor="company">Entidade</CFormLabel>
+        {/* <CCol md={4}>
+  <CFormLabel htmlFor="company">Entidade<span style={{ color: 'red' }}>*</span></CFormLabel>
   <CFormSelect
     id="company"
-    name="company_ID"
-    value={formData.company?.id || ''}
+    name="company"
+    value={formData.company || value.company}
     onChange={handleChange}
     disabled={isAdmin}
     required
   >
-    <option value="" disabled>
-      Selecione uma entidade
-    </option>
-    {Array.isArray(listaCompany) &&
-      listaCompany.map((company) => (
-        <option key={company.id} value={company.id}>
-          {company.name}
-        </option>
-      ))}
+    <option value="">Selecione uma entidade</option>
+    {listaCompany.map((company) => (
+      <option key={company.id} value={company.id}>
+        {company.name}
+      </option>
+    ))}
   </CFormSelect>
   <CFormFeedback invalid>Por favor, selecione uma entidade válida.</CFormFeedback>
-</CCol>
+</CCol> */}
+ <CCol md={4}>
+<CFormSelect
+  id="company"
+  name="company"
+  value={formData.company?.id || ""}
+  onChange={handleChange}
+  disabled={isAdmin}
+  required
+>
+  <option value="" disabled>
+    Selecione uma entidade
+  </option>
+  {Array.isArray(listaCompany) &&
+    listaCompany.map((company, index) => (
+      <option key={index} value={company.id}>
+        {company.name}
+      </option>
+    ))}
+</CFormSelect>
 
-*/}
+</CCol> 
+
            {/* Section Title */}
            <hr style={{ border: '1px solid #FCAF2E', margin: '20px 0' }} />
-           <h4          style={{
+           <h4      className="mb-3"     style={{
             color: "#ffb732", // Orange title color
             fontWeight: "bold", // Bold text
             marginBottom: "5px", // Spacing below title
@@ -1376,7 +1388,14 @@ DADOS PESSOAIS DO CLIENTE</h4>
         </CRow>
         {/* Formulário com Assinatura */}
         <hr style={{ border: "1px solid #ffc107", margin: "20px 0" }} />
-        <h4>Documentos Necessários</h4>
+
+        <h4          style={{
+            color: "#ffb732", // Orange title color
+            fontWeight: "bold", // Bold text
+            marginBottom: "5px", // Spacing below title
+          }}
+        >
+DOCUMENTOS NECESSÁRIOS</h4>
 
 {/* <CCol xs={12} md={6}>
   <div className="mb-3">
@@ -1513,7 +1532,81 @@ DADOS PESSOAIS DO CLIENTE</h4>
     : null}
     
 </CCol>
+<CCol xs={12} md={6}>
+  <div className="mb-3">
+    <CFormLabel htmlFor="docBankStatementFile">
+      Extrato bancário <span style={{ color: 'red' }}>*</span>
+    </CFormLabel>
+    <CFormInput
+      type="file"
+      id="docBankStatementFile"
+      name="docBankStatementFile"
+      onChange={(e) => handleChange(e)}
+      accept=".pdf"
+      required={!formData.docBankStatementFilePath}
+    />
+    <small className="form-text text-muted">Somente arquivos em PDF.</small>
+  </div>
+  {formData.docBankStatementFile
+    ? renderPreview(URL.createObjectURL(formData.docBankStatementFile))
+    : formData.docBankStatementFilePath
+      ? renderPreview(formData.docBankStatementFilePath)
+      : null}
+
+    {/* {formData.docBankStatementFilePath && (
+      <CButton
+        color="secondary"
+        onClick={() => window.open(formData.docBankStatementFilePath, '_blank')}
+        className="mt-2"
+      >
+        Abrir Arquivo
+      </CButton>
+    )} */}
+</CCol>
+
+<CCol xs={12} md={6}>
+  <div className="mb-3">
+    <CFormLabel htmlFor="docClientRegistrationFormFile">
+      Formulário de registo de cliente <span style={{ color: 'red' }}>*</span>
+    </CFormLabel>
+    <CFormInput
+      type="file"
+      id="docClientRegistrationFormFile"
+      name="docClientRegistrationFormFile"
+      onChange={(e) => handleChange(e)}
+      accept=".pdf"
+      required={!formData.docClientRegistrationFormFilePath}
+    />
+    <small className="form-text text-muted">Somente arquivos em PDF.</small>
+  </div>
+  {formData.docClientRegistrationFormFile
+    ? renderPreview(URL.createObjectURL(formData.docClientRegistrationFormFile))
+    : formData.docClientRegistrationFormFilePath
+      ? renderPreview(formData.docClientRegistrationFormFilePath)
+      : null}
+
+  {/* {formData.docClientRegistrationFormFilePath && (
+    <CButton
+      color="secondary"
+      onClick={() => window.open(formData.docClientRegistrationFormFilePath, '_blank')}
+      className="mt-2"
+    >
+      Abrir Arquivo
+    </CButton>
+  )} */}
+</CCol>
+
+
         <hr style={{ border: '1px solid #ffc107', margin: '20px 0' }} />
+        
+        <h4          style={{
+            color: "#ffb732", // Orange title color
+            fontWeight: "bold", // Bold text
+            marginBottom: "5px", // Spacing below title
+          }}
+        >
+OUTROS
+</h4>
         <div className="mb-3">
             <p>
               Eu,{" "}
@@ -1539,66 +1632,10 @@ DADOS PESSOAIS DO CLIENTE</h4>
           <CRow className="mb-3">
             {/* Assinatura do Cliente */}
             <div className="mb-3">
- {/* <CCol md={6}>
-  <CFormLabel htmlFor="clientSignatureFile" className="fw-bold">
-    ASSINATURA DO CLIENTE: <span style={{ color: "red" }}>*</span>
-  </CFormLabel>
-  <CFormInput
-    type="file"
-    id="clientSignatureFile"
-    name="clientSignatureFile"
-    onChange={handleChange}
-    accept=".pdf, .png, .jpg"
-  />
-</CCol> */}
-{/* 
-<CCol md={6}>
-  <CFormLabel htmlFor="clientSignature" className="fw-bold">
-    ASSINATURA DO CLIENTE:
-  </CFormLabel>
-
-  <div className="border rounded p-2">
-    {formData.clientSignatureFile ? (
-      <img
-        src={URL.createObjectURL(formData.clientSignatureFile)}
-        alt="Assinatura do Cliente"
-        className="border rounded"
-        style={{ width: "100%", height: "150px", objectFit: "contain" }}
-      />
-    ) : formData.signatureFilePath ? (
-      <img
-        src={formData.signatureFilePath}
-        alt="Assinatura do Cliente"
-        className="border rounded"
-        style={{ width: "100%", height: "150px", objectFit: "contain" }}
-      />
-    ) : (
-      <SignatureCanvas
-        ref={sigCanvas}
-        penColor="black"
-        canvasProps={{
-          width: 400,
-          height: 150,
-          className: "border rounded",
-        }}
-      />
-    )}
-  </div>
-
-  {!formData.clientSignatureFile && !formData.signatureFilePath && (
-    <div className="mt-2">
-      <CButton color="danger" className="me-2" onClick={() => sigCanvas.current.clear()}>
-        Limpar
-      </CButton>
-      <CButton color="primary" onClick={handleSignatureChange}>
-        Salvar
-      </CButton>
-    </div>
-  )}
-</CCol> */}
+ 
 {/* olamundo */}
 <CCol md={6}>
-  <CFormLabel htmlFor="clientSignature" className="fw-bold">
+  <CFormLabel htmlFor="clientSignature" >
     ASSINATURA DO CLIENTE:
   </CFormLabel>
 
@@ -1686,7 +1723,7 @@ DADOS PESSOAIS DO CLIENTE</h4>
   
           {/* Botão de Submissão */}
           <CCol md={6}>
-            <CFormLabel htmlFor="inputter">Inputter<span style={{ color: 'red' }}>*</span></CFormLabel>
+            <CFormLabel htmlFor="inputter" >Inputter<span style={{ color: 'red' }}>*</span></CFormLabel>
             <CFormTextarea
               id="inputter"
               name="inputter"
