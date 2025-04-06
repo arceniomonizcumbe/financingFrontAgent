@@ -96,7 +96,7 @@ const FinanceValidation = ({ formData, setFormData }) => {
             disabled
           />
         </CCol>
-        <CCol md={6}>
+        <CCol md={4}>
           <CFormLabel htmlFor="clientName">Nome Completo</CFormLabel>
           <CFormInput
             type="text"
@@ -107,7 +107,7 @@ const FinanceValidation = ({ formData, setFormData }) => {
             disabled
           />
         </CCol>
-        <CCol md={4}>
+        <CCol md={2}>
           <CFormLabel htmlFor="clientIdNumber">Nr. Identificação</CFormLabel>
           <CFormInput
             type="text"
@@ -118,8 +118,8 @@ const FinanceValidation = ({ formData, setFormData }) => {
             disabled
           />
         </CCol>
-        <CCol md={4}>
-          <CFormLabel htmlFor="clientNuit">Nuit</CFormLabel>
+        <CCol md={2}>
+          <CFormLabel htmlFor="clientNuit">NUIT</CFormLabel>
           <CFormInput
             type="text"
             id="clientNuit"
@@ -131,7 +131,7 @@ const FinanceValidation = ({ formData, setFormData }) => {
           />
           <CFormFeedback invalid>Por favor, forneça um NUIT válido.</CFormFeedback>
         </CCol>
-        <CCol md={4}>
+        <CCol md={2}>
           <CFormLabel htmlFor="clientSalary">Rendimento Líquido</CFormLabel>
           <CFormInput
             type="number"
@@ -428,8 +428,8 @@ const maxDateString = formatDate(maxDate);
   return (
     <CRow>
       <CCol xs={12}>
-        <CCard className="mb-4">
-          <CCardHeader>
+        <CCard  className='mb-4'>
+          <CCardHeader  className='bg-warning text-center'>
             <strong>Dados pessoais do cliente</strong>
           </CCardHeader>
           <CCardBody>

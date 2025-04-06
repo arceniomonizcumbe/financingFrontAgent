@@ -273,6 +273,7 @@ export const getOnlyLoans = async () => {
     throw error
   }
 }
+
 export const getDisburseLoan = async () => {
   const API_URL = 'http://192.168.2.125:8081/loans/pendingDisburse'
   try {
@@ -503,7 +504,12 @@ export const companyApprovedList = async () => {
   console.log(response)
   return response
 }
-
+export const getInternCompanies = async () => {
+  const API_URL = 'http://192.168.2.125:8081/internal/companies/sync'
+  const response = await axios.get(`${API_URL}`)
+  console.log(response)
+  return response
+}
 export const companyPendingList = async () => {
   const API_URL = 'http://192.168.2.125:8081/company/pending'
   const response = await axios.get(`${API_URL}`)

@@ -32,10 +32,12 @@ import CIcon from '@coreui/icons-react'
 import {
   getPendingClient,
   ListClient,
+  
   getExternClientsByUserId,
   deleteClient,
   getLogByEntityIDName,
-  getClientSituation
+  getClientSituation,
+  getInternCompanies
 } from '../../../axios_api/clientService'
 import { useAuth } from '../../../AuthContext'
 
@@ -68,13 +70,12 @@ const Tables = () => {
   }
   useEffect(() => {
     const fetchClientes = async () => {
-      if (!user?.id) return // Prevents execution if user is undefined or id is missing
-  
+      if (!user?.id) return
       try {
                 //const data = user?.role === 'ADMIN' ? await getPendingClient() : await ListClient()
 
-        const data = await getExternClientsByUserId(user.id) // Use user.id correctly
-  
+        const data = await getExternClientsByUserId(user.id) 
+        const company = await getInternCompanies();
         if (Array.isArray(data)) {
           setClientes(data)
         } else {

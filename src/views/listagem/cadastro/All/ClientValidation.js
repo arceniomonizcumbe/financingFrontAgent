@@ -377,7 +377,7 @@ const ClientValidation = ({ value, onChange }) => {
                       let docClientRegistrationFormFilePath = "";
                       let docBankStatementFilePath = "";
   
-                      if (data.state !== "DECLINED") {
+                      //if (data.state !== "DECLINED") {
                           // Função para verificar se a imagem existe na porta 8081, caso contrário, usar 8080
                           const getFilePath = async (fileName) => {
                               if (!fileName) return ""; // Retorna vazio se não houver nome de arquivo
@@ -403,7 +403,7 @@ const ClientValidation = ({ value, onChange }) => {
 
                           docBankStatementFilePath = await getFilePath(data.docBankStatementFilePath);
                           docClientRegistrationFormFilePath = await getFilePath(data.docClientRegistrationFormFilePath);
-                      }
+                    //  }
   
                       setClientData(data);
                       setFormData({

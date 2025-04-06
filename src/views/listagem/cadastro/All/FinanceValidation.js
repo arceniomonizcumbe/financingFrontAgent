@@ -105,7 +105,8 @@ const renderPreview = (fileUrl) =>
                 setLoanData(data);
       
                 // Verifica se o estado não é "Declined" antes de definir as imagens
-                const shouldShowImages = data.state !== "DECLINED";
+                //const shouldShowImages = data.state !== "DECLINED";
+                const shouldShowImages = data.state ;
       
                 const updatedData = {
                   name: data.name || '',

@@ -97,7 +97,7 @@ const Validation = ({ clientsCompare = [], isAdmin }) => {
       // Função para remover o prefixo de URL do caminho do arquivo
       const removehostPrefix = (path) => {
         if (!path) return '';
-        return path.replace(/^http:\/\/localhost:808[01]\/uploads\//, '');
+        return path.replace(/^http:\/\/192.168.2.125:808[01]\/uploads\//, '');
       };
       
       // Processar dados para remover a URL local dos caminhos dos arquivos
